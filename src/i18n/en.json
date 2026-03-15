@@ -1,0 +1,72 @@
+{
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "theme": "Theme",
+    "language": "Language",
+    "storage": "Storage",
+    "clearCache": "Clear Cache",
+    "about": "About",
+    "privacy": "Privacy Policy",
+    "contact": "Contact Us",
+    "rate": "Rate the App",
+    "theme_system": "System Default",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "chooseTheme": "Choose Theme",
+    "chooseLanguage": "Choose Language",
+    "clearCacheTitle": "Clear Cache",
+    "clearCacheMessage": "Are you sure? This will remove temporary images.",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "appVersion": "App Version",
+    "developedWith": "Developed with",
+    "developedBy": "by Ivan and Ksenia"
+  },
+
+  "info": {
+    "audioGuide": "Listen to Audio Guide",
+    "historyInfo": "History & Info",
+    "architectureDetails": "Architecture Details",
+    "tourismInfo": "Tourism Info"
+  },
+
+  "menu": {
+    "searchPlaceholder": "Search by number or name...",
+    "monuments": "Monuments",
+    "notFound": "Not Found",
+    "notFoundMessage": "No monument found with number \"{{number}}\"."
+  },
+
+  "map": {
+    "title": "Explore"
+  },
+
+
+
+  "monument_fields": {
+    "year": "Year Built",
+    "height": "Height",
+    "architect": "Architect",
+    "sculptor": "Sculptor",
+    "material": "Material",
+    "visitors": "Annual Visitors",
+    "status": "Status",
+    "schedule": "Schedule",
+    "obelisk_height": "",
+    "strategic_height": ""
+  },
+  "monuments_data": {
+    "1": {
+      "name": "The Motherland Calls",
+      "location": "Volgograd, Russia",
+      "description": "The Motherland Calls is a statue on Mamayev Kurgan...",
+      "height": "85 m",
+      "architect": "Nikolay Nikitin",
+      "sculptor": "Yevgeny Vuchetich",
+      "material": "Concrete, Metal",
+      "visitors": "~2 millions",
+      "status": "Open"
+    }
+  }
+}
