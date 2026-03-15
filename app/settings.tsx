@@ -11,11 +11,11 @@ import {
   View,
 } from 'react-native';
 // ⚠️ Убедись, что путь к файлу ThemeContext правильный!
-import { useTheme } from '../src/theme/ThemeContext'; 
 import { headerStyles } from '@/src/theme/headerStyles';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import i18n from '@/src/i18n/i18n';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../src/theme/ThemeContext';
+// import i18n from '@/src/i18n/i18n';
 import { useTranslation } from "react-i18next";
 
 // --- Types ---
@@ -131,7 +131,7 @@ export default function SettingsScreen() {
   // 1. Достаем глобальное состояние темы и цвета!
   const { themeMode, setThemeMode, colors, isDark } = useTheme();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   
   // 2. Локальные стейты для языка и видимости модалок
   const currentLanguage = i18n.language as LanguageType;

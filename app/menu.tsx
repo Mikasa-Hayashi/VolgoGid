@@ -1,7 +1,10 @@
+import { monumentData } from '@/src/store/monumentStore';
+import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Dimensions,
   FlatList,
   Image,
@@ -10,15 +13,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../src/theme/ThemeContext'; // Импортируем хук для темы
-import { headerStyles } from '@/src/theme/headerStyles';
-import { cleanPath } from 'expo-router/build/fork/getStateFromPath-forks';
-import { useTranslation } from "react-i18next";
-import { monumentData } from '@/src/store/monumentStore';
 
 // --- Types ---
 type MenuHeaderProps = {
@@ -30,7 +28,7 @@ type MenuHeaderProps = {
 type Monument = typeof monumentData[0];
 
 // --- Component 1: Header ---
-const MenuHeader = ({ onBack, onSettings, colors }: { onBack(): void; onSettings(): void; colors: any }) => (
+const MenuHeader = ({ onBack, onSettings, colors, t }: { onBack(): void; onSettings(): void; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
     <View style={headerStyles.headerContent}>
       {/* Левая кнопка */}
@@ -40,7 +38,7 @@ const MenuHeader = ({ onBack, onSettings, colors }: { onBack(): void; onSettings
 
       {/* Текст посередние */}
       <Text style={[headerStyles.headerTitle, { color: colors.text }]}>
-        Scan<Text style={{ color: colors.primary }}>App</Text>
+        {t("menu.titleFirst")}<Text style={{ color: colors.primary }}>{t("menu.titleSecond")}</Text>
       </Text>
 
       {/* Правая кнопка */}
@@ -134,7 +132,7 @@ export default function MonumentsScreen() {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
       {/* Header & Search */}
-      <MenuHeader onBack={handleBack} onSettings={handleSettings} colors={colors} />
+      <MenuHeader onBack={handleBack} onSettings={handleSettings} colors={colors} t={t} />
       <View style={styles.topSection}>
         <SearchBar 
           value={searchQuery} 

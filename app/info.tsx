@@ -1,6 +1,8 @@
+import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   Image,
@@ -13,9 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { monumentData } from '../src/store/monumentStore'; // Импортируем моковые данные для монумента
-import { headerStyles } from '@/src/theme/headerStyles';
-import { useTheme } from '../src/theme/ThemeContext'; 
-import { useTranslation } from "react-i18next";
+import { useTheme } from '../src/theme/ThemeContext';
 
 // --- Types ---
 type TopNavProps = {
@@ -90,7 +90,11 @@ const InfoTable: React.FC<InfoTableProps> = ({ title, data, colors }) => (
           { borderBottomColor: colors.border }
         ]}>
           <Text style={[styles.tableLabel, { color: colors.text }]}>{item.label}</Text>
-          <Text style={[styles.tableValue, { color: colors.textMuted }]}>{item.value}</Text>
+          <View style={styles.tableValueContainer}>
+            <Text style={[styles.tableValue, { color: colors.textMuted }]}>
+              {item.value}
+            </Text>
+          </View>
         </View>
       ))}
     </View>
@@ -127,6 +131,10 @@ export default function MonumentDetailScreen() {
   const handleAudioGuide = () => {
     console.log("Play Audio Guide");
   };
+
+  const handleQuiz = () => {
+    router.push(`/quiz?id=${monument.id}&name=${t(`${monumentTranslationPath}.name`)}`);
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -186,6 +194,15 @@ export default function MonumentDetailScreen() {
           }))} 
           colors={colors}
         />
+
+        <View style={styles.actionRow}>
+          <ActionButton 
+            icon="question-mark-circle" 
+            label={t("info.play_quiz")} 
+            onPress={handleQuiz} 
+            colors={colors}
+          />
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -325,7 +342,7 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -336,8 +353,16 @@ const styles = StyleSheet.create({
   },
   tableLabel: {
     fontSize: 16,
+    flex: 1, // Занимает доступное место слева
+    paddingRight: 15, // Боковой интервал между колонками
+  },
+  tableValueContainer: {
+    flex: 2, // Занимает больше места (например, 2/3 строки)
+    alignItems: 'flex-end', // Текст значения прижат к правому краю
   },
   tableValue: {
     fontSize: 16,
+    textAlign: 'right', // Чтобы перенесенный текст тоже был по правому краю
+    lineHeight: 22, // Добавляем межстрочный интервал для читаемости
   },
 });

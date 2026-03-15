@@ -143,7 +143,7 @@ const MonumentPreviewCard = ({ monument, onClose, onDetails, t, colors }: { monu
         </Text>
       </View>
       <TouchableOpacity style={[styles.detailsButton, { backgroundColor: colors.primary }]} onPress={onDetails}>
-        <Text style={styles.detailsButtonText}>Details</Text>
+        <Text style={styles.detailsButtonText}>{t("map.details")}</Text>
         <Ionicons name="arrow-forward" size={16} color="black" />
       </TouchableOpacity>
     </View>
