@@ -29,7 +29,7 @@ export const TopControlPanel: React.FC<TopControlProps> = ({ isTorchOn, onToggle
 
         {/* Карта (слева) */}
         <TouchableOpacity onPress={onToggleMap} style={styles.iconButton}>
-          <Ionicons name="location-sharp" size={28} color="white" />
+          <Ionicons name="location-sharp" size={28} color="#FFD700" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
