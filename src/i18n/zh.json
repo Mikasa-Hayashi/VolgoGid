@@ -34,7 +34,32 @@
     "searchPlaceholder": "按编号或名称搜索...",
     "monuments": "纪念碑",
     "notFound": "未找到",
-    "notFoundMessage": "未找到编号为 \"{{number}}\" 的纪念碑。"
+    "notFoundMessage": "未找到编号为 \"{{number}}\" 的纪念碑。",
+    "routes": "路线"
+  },
+  "route_info": {
+    "openOnMap": "在地图中打开",
+    "about": "关于路线",
+    "stops": "路线站点",
+    "stopsCount": "站点数：{{count}}"
+  },
+  "map": {
+    "title": "探索",
+    "details": "详情"
+  },
+  "routes_data": {
+    "center": {
+      "name": "伏尔加格勒地标",
+      "description": "从马马耶夫岗的“祖国母亲在召唤”雕像，到河滨露天剧场与互动历史公园，一天内了解城市建筑与文化。"
+    },
+    "history": {
+      "name": "记忆之路",
+      "description": "途经斯大林格勒战役相关纪念地：秃山、全景博物馆旁的“军事列车”与首辆有轨电车纪念碑，适合军事历史主题游览。"
+    },
+    "poetic": {
+      "name": "诗意伏尔加格勒",
+      "description": "秃山、伏尔加河露天剧场与“军事列车”：战争记忆、滨河建筑与铁路传奇。"
+    }
   },
   "monument_fields": {
     "year": "建造/开放年份",

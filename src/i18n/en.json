@@ -38,7 +38,30 @@
     "notFound": "Not Found",
     "notFoundMessage": "No monument found with number \"{{number}}\".",
     "titleFirst": "Volgo",
-    "titleSecond": "Gid"
+    "titleSecond": "Gid",
+    "routes": "Routes"
+  },
+
+  "route_info": {
+    "openOnMap": "Open on map",
+    "about": "About the route",
+    "stops": "Route stops",
+    "stopsCount": "Stops: {{count}}"
+  },
+
+  "routes_data": {
+    "center": {
+      "name": "Symbols of Volgograd",
+      "description": "A route through the city’s landmarks: from Motherland Calls on Mamayev Kurgan to the riverside amphitheater and the interactive history park. A good introduction to Volgograd’s architecture and culture in one day."
+    },
+    "history": {
+      "name": "Road of memory",
+      "description": "A path through memorials of the Battle of Stalingrad: Lysaya Gora, the Military Echelon near the panorama, and the first tram monument. Ideal for a themed walk focused on the city’s military history."
+    },
+    "poetic": {
+      "name": "Poetic Volgograd",
+      "description": "Lysaya Gora, the Volga amphitheater, and the Military Echelon: war memory, embankment architecture, and railway heritage in one route."
+    }
   },
 
   "map": {
