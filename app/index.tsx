@@ -1,6 +1,6 @@
 import { generateMapHTML } from '@/src/map/generateMapHTML';
-import { monumentData } from '@/src/store/monumentStore';
-import { getResolvedRouteMapPoints, routeData } from '@/src/store/routeStore';
+import { getAllMonumentPreviews, MonumentPreview } from '@/src/db/monumentRepository'; // ← было: monumentStore
+import { getResolvedRouteMapPoints, getRouteById }  from '@/src/db/routeRepository';  // ← было: routeStore
 import { headerStyles } from '@/src/theme/headerStyles';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +34,7 @@ const MapHeader = ({ onMenu, onCamera, colors, t }: { onMenu(): void; onCamera()
   </SafeAreaView>
 );
 
+// Тип теперь MonumentPreview (из репозитория), а не typeof monumentData[0]
 const MonumentPreviewCard = ({
   monument,
   onClose,
@@ -41,7 +42,7 @@ const MonumentPreviewCard = ({
   t,
   colors,
 }: {
-  monument: (typeof monumentData)[0];
+  monument: MonumentPreview;
   onClose: () => void;
   onDetails: () => void;
   t: any;
@@ -55,8 +56,9 @@ const MonumentPreviewCard = ({
     <View style={styles.previewInfo}>
       <View>
         <Text style={[styles.previewId, { color: colors.primary }]}>#{monument.id}</Text>
+        {/* Имя уже переведено в репозитории — t() больше не нужен */}
         <Text style={[styles.previewTitle, { color: colors.text }]} numberOfLines={1}>
-          {t(`monuments_data.${monument.id}.name`)}
+          {monument.name}
         </Text>
       </View>
       <TouchableOpacity style={[styles.detailsButton, { backgroundColor: colors.primary }]} onPress={onDetails}>
@@ -74,23 +76,25 @@ export default function MapScreen() {
   const webviewRef = useRef<WebView>(null);
   const { routeId } = useLocalSearchParams<{ routeId?: string }>();
 
-  const [selectedMonument, setSelectedMonument] = useState<(typeof monumentData)[0] | null>(null);
+  const [selectedMonument, setSelectedMonument] = useState<MonumentPreview | null>(null);
 
-  const activeRoute = routeId ? routeData.find((r) => r.id === routeId) : undefined;
+  // Загружаем данные из SQLite с учётом текущего языка
+  const lang = i18n.language;
+
+  const activeRoute = useMemo(
+    () => (routeId ? getRouteById(routeId, lang) : null),
+    [routeId, lang],
+  );
 
   const mapPoints = useMemo(() => {
     if (activeRoute) {
-      return getResolvedRouteMapPoints(activeRoute, t);
+      return getResolvedRouteMapPoints(activeRoute.id, lang);
     }
-    return monumentData
+    // Все памятники — уже с переведёнными именами
+    return getAllMonumentPreviews(lang)
       .filter((m) => m.lat && m.lon)
-      .map((m) => ({
-        id: m.id,
-        lat: m.lat,
-        lon: m.lon,
-        name: t(`monuments_data.${m.id}.name`),
-      }));
-  }, [activeRoute, routeId, t, i18n.language]);
+      .map((m) => ({ id: m.id, lat: m.lat, lon: m.lon, name: m.name }));
+  }, [activeRoute, routeId, lang]);
 
   const html = useMemo(
     () =>
@@ -105,7 +109,9 @@ export default function MapScreen() {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type === 'MARKER_CLICK') {
-        const monument = monumentData.find((m) => m.id === data.id);
+        // Ищем памятник из текущего набора точек
+        const allMonuments = getAllMonumentPreviews(lang);
+        const monument = allMonuments.find((m) => m.id === data.id);
         if (monument) setSelectedMonument(monument);
       }
     } catch (e) {
@@ -146,8 +152,9 @@ export default function MapScreen() {
             <TouchableOpacity onPress={exitRouteMode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close-circle" size={22} color={colors.textMuted} />
             </TouchableOpacity>
+            {/* Имя маршрута уже переведено в репозитории */}
             <Text style={[styles.routeChipText, { color: colors.text }]} numberOfLines={1}>
-              {t(`routes_data.${activeRoute.id}.name`)}
+              {activeRoute.name}
             </Text>
             <TouchableOpacity onPress={openRouteDetails} activeOpacity={0.85} style={styles.routeChipDetailsBtn}>
               <Text style={[styles.routeChipAction, { color: colors.primary }]}>{t('map.details')}</Text>
@@ -157,7 +164,7 @@ export default function MapScreen() {
         )}
 
         <WebView
-          key={`map-${routeId ?? 'all'}-${i18n.language}`}
+          key={`map-${routeId ?? 'all'}-${lang}`}
           ref={webviewRef}
           source={{ html }}
           style={styles.map}

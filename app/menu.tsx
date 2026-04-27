@@ -1,5 +1,5 @@
-import { monumentData } from '@/src/store/monumentStore';
-import { routeData } from '@/src/store/routeStore';
+import { getAllMonumentPreviews, MonumentPreview, searchMonuments } from '@/src/db/monumentRepository'; // ← было: monumentStore
+import { getAllRoutes } from '@/src/db/routeRepository';                                                   // ← было: routeStore
 import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,8 +18,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../src/theme/ThemeContext';
-
-type Monument = (typeof monumentData)[0];
 
 const MenuHeader = ({
   onBack,
@@ -108,12 +106,10 @@ const MonumentCard = ({
   item,
   onPress,
   colors,
-  t,
 }: {
-  item: Monument;
+  item: MonumentPreview;
   onPress: () => void;
   colors: any;
-  t: any;
 }) => (
   <TouchableOpacity
     style={[styles.cardContainer, { backgroundColor: colors.card }]}
@@ -125,8 +121,9 @@ const MonumentCard = ({
       <View style={styles.badgeContainer}>
         <Text style={[styles.badgeText, { color: colors.primary }]}>#{item.id}</Text>
       </View>
+      {/* item.name уже переведён в репозитории — t() здесь не нужен */}
       <Text style={styles.cardTitle} numberOfLines={2}>
-        {t(`monuments_data.${item.id}.name`)}
+        {item.name}
       </Text>
     </View>
   </TouchableOpacity>
@@ -174,24 +171,38 @@ function chunkPairs<T>(items: T[]): T[][] {
 }
 
 export default function MonumentsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [monumentsExpanded, setMonumentsExpanded] = useState(true);
   const [routesExpanded, setRoutesExpanded] = useState(true);
 
-  const filteredMonuments = monumentData.filter((monument) => {
-    const query = searchQuery.trim().toLowerCase();
-    if (query === '') return true;
-    const idMatch = monument.id.toLowerCase().includes(query);
-    const nameMatch = t(`monuments_data.${monument.id}.name`).toLowerCase().includes(query);
-    return idMatch || nameMatch;
-  });
+  const lang = i18n.language;
+
+  // Загружаем все памятники из SQLite с нужным языком
+  const allMonuments = useMemo(() => getAllMonumentPreviews(lang), [lang]);
+
+  // Фильтрация: searchMonuments делает запрос в SQLite через LIKE
+  const filteredMonuments = useMemo(() => {
+    const query = searchQuery.trim();
+    if (query === '') return allMonuments;
+    // Поиск по имени (SQLite LIKE) + по id локально
+    const byName = searchMonuments(query, lang);
+    const byId = allMonuments.filter((m) =>
+      m.id.toLowerCase().includes(query.toLowerCase()),
+    );
+    // Объединяем без дублей
+    const ids = new Set(byName.map((m) => m.id));
+    return [...byName, ...byId.filter((m) => !ids.has(m.id))];
+  }, [searchQuery, lang, allMonuments]);
 
   const monumentRows = useMemo(() => chunkPairs(filteredMonuments), [filteredMonuments]);
 
-  const handleMonumentPress = (monument: Monument) => {
+  // Маршруты: имена и описания уже переведены
+  const routes = useMemo(() => getAllRoutes(lang), [lang]);
+
+  const handleMonumentPress = (monument: MonumentPreview) => {
     router.push(`/info?id=${monument.id}`);
   };
 
@@ -243,7 +254,6 @@ export default function MonumentsScreen() {
                       item={item}
                       onPress={() => handleMonumentPress(item)}
                       colors={colors}
-                      t={t}
                     />
                   ))}
                   {row.length === 1 && <View style={styles.cardPlaceholder} />}
@@ -259,19 +269,15 @@ export default function MonumentsScreen() {
           />
 
           {routesExpanded &&
-            routeData.map((route) => {
-              const cover = monumentData.find((m) => m.id === route.coverMonumentId);
-              if (!cover) return null;
-              return (
-                <RouteRow
-                  key={route.id}
-                  coverImageUrl={cover.imageUrl}
-                  title={t(`routes_data.${route.id}.name`)}
-                  onPress={() => handleRoutePress(route.id)}
-                  colors={colors}
-                />
-              );
-            })}
+            routes.map((route) => (
+              <RouteRow
+                key={route.id}
+                coverImageUrl={route.coverImageUrl}
+                title={route.name}            // ← уже переведено
+                onPress={() => handleRoutePress(route.id)}
+                colors={colors}
+              />
+            ))}
         </View>
       </ScrollView>
     </View>

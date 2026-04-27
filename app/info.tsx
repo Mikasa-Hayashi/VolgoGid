@@ -1,4 +1,5 @@
 import { headerStyles } from '@/src/theme/headerStyles';
+import { getMonumentById } from '@/src/db/monumentRepository'; // ← было: monumentStore
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
@@ -14,7 +15,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { monumentData } from '../src/store/monumentStore'; // Импортируем моковые данные для монумента
 import { useTheme } from '../src/theme/ThemeContext';
 
 // --- Types ---
@@ -32,7 +32,7 @@ type MonumentHeroProps = {
 
 type InfoTableProps = {
   title: string;
-  data: { label: string; value: any }[];
+  data: { label: string; value: string | null }[];
   colors: any;
 };
 
@@ -40,18 +40,9 @@ type InfoTableProps = {
 const InfoHeader = ({ onBack, onShare, colors }: { onBack(): void; onShare(): void; colors: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
     <View style={headerStyles.headerContent}> 
-      {/* Левая кнопка */}
       <TouchableOpacity onPress={onBack} style={headerStyles.iconButton}>
         <Ionicons name="chevron-back" size={28} color={colors.text} />
       </TouchableOpacity>
-
-      {/* Текст посередние */}
-      {/* <Text style={[headerStyles.headerTitle, { color: colors.text }]}></Text> */}
-
-      {/* Правая кнопка */}
-      {/* <TouchableOpacity onPress={onShare} style={headerStyles.iconButton}>
-        <Ionicons name="share" size={28} color={colors.text} />
-      </TouchableOpacity> */}
       <View style={{width: 40}}></View>
     </View>
   </SafeAreaView>
@@ -92,7 +83,7 @@ const InfoTable: React.FC<InfoTableProps> = ({ title, data, colors }) => (
           <Text style={[styles.tableLabel, { color: colors.text }]}>{item.label}</Text>
           <View style={styles.tableValueContainer}>
             <Text style={[styles.tableValue, { color: colors.textMuted }]}>
-              {item.value}
+              {item.value ?? '—'}
             </Text>
           </View>
         </View>
@@ -101,7 +92,7 @@ const InfoTable: React.FC<InfoTableProps> = ({ title, data, colors }) => (
   </View>
 );
 
-// --- Component 4: Quick Action Button (Optional but cool for Monuments) ---
+// --- Component 4: Action Button ---
 const ActionButton = ({ icon, label, onPress, colors }: { icon: any; label: string; onPress: () => void; colors: any }) => (
   <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primary }]} onPress={onPress}>
     <Ionicons name={icon} size={24} color="black" />
@@ -114,26 +105,34 @@ export default function MonumentDetailScreen() {
   const { themeMode, setThemeMode, colors, isDark } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const monument = monumentData.find(m => m.id === id) ?? monumentData[0];
-  const monumentTranslationPath = `monuments_data.${monument.id}`;
-
+  // Загружаем памятник из SQLite с учётом текущего языка
+  // Все поля (name, description, details, visitors) уже переведены
+  const monument = getMonumentById(id ?? '1', i18n.language);
 
   const handleBack = () => {
     router.back();
   };
 
-  const handleShare = () => {
-    
-  };
+  const handleShare = () => {};
 
   const handleAudioGuide = () => {
     console.log("Play Audio Guide");
   };
 
   const handleQuiz = () => {
-    router.push(`/quiz?id=${monument.id}&name=${t(`${monumentTranslationPath}.name`)}`);
+    if (monument) {
+      router.push(`/quiz?id=${monument.id}&name=${monument.name}`);
+    }
+  };
+
+  if (!monument) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <InfoHeader onBack={handleBack} onShare={handleShare} colors={colors} />
+      </View>
+    );
   }
 
   return (
@@ -153,13 +152,13 @@ export default function MonumentDetailScreen() {
         {/* Hero Image & Titles */}
         <MonumentHero 
           imageUrl={monument.imageUrl} 
-          name={t(`${monumentTranslationPath}.name`)}
-          location={t(`${monumentTranslationPath}.location`)}
+          name={monument.name}
+          location={monument.location}
           monumentId={monument.id}
           colors={colors}
         />
 
-        {/* Action Button (e.g. Audio Guide) */}
+        {/* Action Button (Audio Guide) */}
         <View style={styles.actionRow}>
           <ActionButton 
             icon="headset" 
@@ -173,24 +172,27 @@ export default function MonumentDetailScreen() {
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t("info.historyInfo")}</Text>
           <Text style={[styles.descriptionText, { color: colors.textMuted }]}>
-            {t(`${monumentTranslationPath}.description`)}
+            {monument.description}                    {/* ← уже переведено */}
           </Text>
         </View>
 
         {/* Fact Tables */}
+        {/* details и visitors — массивы { labelKey, value }                */}
+        {/* labelKey — ключ i18n для заголовка (monument_fields.xxx)        */}
+        {/* value — уже готовое значение на нужном языке из SQLite          */}
         <InfoTable
           title={t("info.architectureDetails")}
           data={monument.details.map(item => ({ 
-            label: t(item.labelKey), 
-            value: item.valueKey ? t(item.valueKey) : item.value 
+            label: t(item.labelKey),
+            value: item.value,
           }))} 
           colors={colors}
         />
         <InfoTable 
           title={t("info.tourismInfo")}
           data={monument.visitors.map(item => ({ 
-            label: t(item.labelKey), 
-            value: t(item.valueKey)
+            label: t(item.labelKey),
+            value: item.value,
           }))} 
           colors={colors}
         />
@@ -217,16 +219,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  
-  // Navigation
-  // headerContainer: {
-  //   backgroundColor: 'transparent',
-  //   position: 'absolute', // Делаем хедер плавающим поверх картинки!
-  //   top: 0,
-  //   left: 0,
-  //   right: 0,
-  //   zIndex: 10,
-  // },
   headerContainer: { backgroundColor: 'black', zIndex: 10 },
   headerContent: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15 },
   navContent: {
@@ -242,26 +234,17 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    // // Добавим легкую тень, чтобы кнопку было видно на светлых фото
-    // shadowColor: "#000",
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.8,
-    // shadowRadius: 2,
   },
-
-  // Scroll Content
   scrollContent: {
     paddingBottom: 20,
   },
-
-  // Hero Section
   heroContainer: {
     alignItems: 'center',
     marginBottom: 20,
   },
   heroImage: {
     width: width,
-    height: 380, // Чуть больше, чем у фруктов, для масштаба
+    height: 380,
   },
   heroTextOverlay: {
     position: 'absolute',
@@ -269,7 +252,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    // paddingTop: 60, // Больше градиента сверху
     backgroundColor: 'rgba(0,0,0,0.6)', 
   },
   badgeContainer: {
@@ -299,8 +281,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontWeight: '500',
   },
-
-  // Action Button
   actionRow: {
     paddingHorizontal: 20,
     marginBottom: 25,
@@ -318,8 +298,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
-  // Sections & Tables
   sectionContainer: {
     paddingHorizontal: 20,
     marginBottom: 25,
@@ -346,23 +324,22 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    // borderBottomColor: '#38383A',
   },
   noBorder: {
     borderBottomWidth: 0,
   },
   tableLabel: {
     fontSize: 16,
-    flex: 1, // Занимает доступное место слева
-    paddingRight: 15, // Боковой интервал между колонками
+    flex: 1,
+    paddingRight: 15,
   },
   tableValueContainer: {
-    flex: 2, // Занимает больше места (например, 2/3 строки)
-    alignItems: 'flex-end', // Текст значения прижат к правому краю
+    flex: 2,
+    alignItems: 'flex-end',
   },
   tableValue: {
     fontSize: 16,
-    textAlign: 'right', // Чтобы перенесенный текст тоже был по правому краю
-    lineHeight: 22, // Добавляем межстрочный интервал для читаемости
+    textAlign: 'right',
+    lineHeight: 22,
   },
 });

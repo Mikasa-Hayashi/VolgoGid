@@ -1,6 +1,5 @@
 import { headerStyles } from '@/src/theme/headerStyles';
-import { monumentData } from '@/src/store/monumentStore';
-import { getRouteStopTitle, routeData } from '@/src/store/routeStore';
+import { getRouteById } from '@/src/db/routeRepository'; // ← было: routeStore + monumentStore
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
@@ -50,19 +49,26 @@ export default function RouteInfoScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const route = routeData.find((r) => r.id === id) ?? routeData[0];
-  const cover = monumentData.find((m) => m.id === route.coverMonumentId) ?? monumentData[0];
-  const baseKey = `routes_data.${route.id}`;
+  // Один запрос — маршрут со всеми переведёнными остановками
+  const route = getRouteById(id ?? '', i18n.language);
 
   const handleBack = () => {
     router.back();
   };
 
   const handleOpenMap = () => {
-    router.push({ pathname: '/', params: { routeId: route.id } });
+    if (route) router.push({ pathname: '/', params: { routeId: route.id } });
   };
+
+  if (!route) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <RouteInfoHeader onBack={handleBack} colors={colors} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -72,10 +78,13 @@ export default function RouteInfoScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
         <View style={styles.heroContainer}>
-          <Image source={{ uri: cover.imageUrl }} style={styles.heroImage} resizeMode="cover" />
+          <Image source={{ uri: route.coverImageUrl }} style={styles.heroImage} resizeMode="cover" />
           <View style={styles.heroTextOverlay}>
-            <Text style={[styles.routeName, { color: 'white' }]}>{t(`${baseKey}.name`)}</Text>
-            <Text style={styles.stopsHint}>{t('route_info.stopsCount', { count: route.monumentIds.length })}</Text>
+            {/* name и description уже переведены в репозитории */}
+            <Text style={[styles.routeName, { color: 'white' }]}>{route.name}</Text>
+            <Text style={styles.stopsHint}>
+              {t('route_info.stopsCount', { count: route.stopCount })}
+            </Text>
           </View>
         </View>
 
@@ -85,22 +94,23 @@ export default function RouteInfoScreen() {
 
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('route_info.about')}</Text>
-          <Text style={[styles.descriptionText, { color: colors.textMuted }]}>{t(`${baseKey}.description`)}</Text>
+          <Text style={[styles.descriptionText, { color: colors.textMuted }]}>{route.description}</Text>
         </View>
 
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('route_info.stops')}</Text>
           <View style={[styles.stopsCard, { backgroundColor: colors.card }]}>
-            {route.monumentIds.map((mid, index) => (
+            {/* route.stops — массив { id, name } с переведёнными именами */}
+            {route.stops.map((stop, index) => (
               <View
-                key={mid}
+                key={stop.id}
                 style={[
                   styles.stopRow,
-                  index < route.monumentIds.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+                  index < route.stops.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
                 ]}
               >
                 <Text style={[styles.stopIndex, { color: colors.primary }]}>{index + 1}.</Text>
-                <Text style={[styles.stopName, { color: colors.text }]}>{getRouteStopTitle(mid, t)}</Text>
+                <Text style={[styles.stopName, { color: colors.text }]}>{stop.name}</Text>
               </View>
             ))}
           </View>

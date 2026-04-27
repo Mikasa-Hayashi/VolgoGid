@@ -52,11 +52,18 @@
         "expo-localization",
         {
           "supportedLocales": {
-            "ios": ["en", "ru"],
-            "android": ["en", "ru"]
+            "ios": [
+              "en",
+              "ru"
+            ],
+            "android": [
+              "en",
+              "ru"
+            ]
           }
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,
