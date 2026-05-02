@@ -69,6 +69,12 @@
     "details": "Детали"
   },
 
+  "tabs": {
+    "overview": "Обзор",
+    "map": "Карта",
+    "routes": "Маршруты"
+  },
+
   "monument_fields": {
     "year": "Год постройки/открытия",
     "height": "Высота",

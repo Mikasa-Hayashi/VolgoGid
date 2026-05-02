@@ -47,6 +47,11 @@
     "title": "探索",
     "details": "详情"
   },
+  "tabs": {
+    "overview": "概览",
+    "map": "地图",
+    "routes": "路线"
+  },
   "routes_data": {
     "center": {
       "name": "伏尔加格勒地标",

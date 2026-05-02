@@ -126,11 +126,6 @@ export default function CameraScreen() {
     }
   };
 
-  const handleOpenMenu = () => {
-    router.push('/menu');
-    // Alert.alert("Menu", "Opening menu...");
-  };
-
   const handleOpenMap = () => {
     router.replace('/')
   }

@@ -51,6 +51,12 @@
     "details": "التفاصيل"
   },
 
+  "tabs": {
+    "overview": "نظرة عامة",
+    "map": "الخريطة",
+    "routes": "المسارات"
+  },
+
   "routes_data": {
     "center": {
       "name": "رموز فولغوغراد",

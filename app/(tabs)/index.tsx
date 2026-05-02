@@ -1,6 +1,6 @@
 import { generateMapHTML } from '@/src/map/generateMapHTML';
-import { getAllMonumentPreviews, MonumentPreview } from '@/src/db/monumentRepository'; // ← было: monumentStore
-import { getResolvedRouteMapPoints, getRouteById }  from '@/src/db/routeRepository';  // ← было: routeStore
+import { getAllMonumentPreviews, MonumentPreview } from '@/src/db/monumentRepository';
+import { getResolvedRouteMapPoints, getRouteById } from '@/src/db/routeRepository';
 import { headerStyles } from '@/src/theme/headerStyles';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,11 +18,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-const MapHeader = ({ onMenu, onCamera, colors, t }: { onMenu(): void; onCamera(): void; colors: any; t: any }) => (
+const MapHeader = ({ onOverview, onCamera, colors, t }: { onOverview(): void; onCamera(): void; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
     <View style={headerStyles.headerContent}>
-      <TouchableOpacity onPress={onMenu} style={headerStyles.iconButton}>
-        <Ionicons name="menu" size={28} color={colors.text} />
+      <TouchableOpacity onPress={onOverview} style={headerStyles.iconButton}>
+        <Ionicons name="list" size={28} color={colors.text} />
       </TouchableOpacity>
 
       <Text style={[headerStyles.headerTitle, { color: colors.text }]}>{t('map.title')}</Text>
@@ -34,7 +34,6 @@ const MapHeader = ({ onMenu, onCamera, colors, t }: { onMenu(): void; onCamera()
   </SafeAreaView>
 );
 
-// Тип теперь MonumentPreview (из репозитория), а не typeof monumentData[0]
 const MonumentPreviewCard = ({
   monument,
   onClose,
@@ -56,7 +55,6 @@ const MonumentPreviewCard = ({
     <View style={styles.previewInfo}>
       <View>
         <Text style={[styles.previewId, { color: colors.primary }]}>#{monument.id}</Text>
-        {/* Имя уже переведено в репозитории — t() больше не нужен */}
         <Text style={[styles.previewTitle, { color: colors.text }]} numberOfLines={1}>
           {monument.name}
         </Text>
@@ -69,7 +67,7 @@ const MonumentPreviewCard = ({
   </View>
 );
 
-export default function MapScreen() {
+export default function MapTabScreen() {
   const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
@@ -77,8 +75,6 @@ export default function MapScreen() {
   const { routeId } = useLocalSearchParams<{ routeId?: string }>();
 
   const [selectedMonument, setSelectedMonument] = useState<MonumentPreview | null>(null);
-
-  // Загружаем данные из SQLite с учётом текущего языка
   const lang = i18n.language;
 
   const activeRoute = useMemo(
@@ -90,11 +86,11 @@ export default function MapScreen() {
     if (activeRoute) {
       return getResolvedRouteMapPoints(activeRoute.id, lang);
     }
-    // Все памятники — уже с переведёнными именами
+
     return getAllMonumentPreviews(lang)
       .filter((m) => m.lat && m.lon)
       .map((m) => ({ id: m.id, lat: m.lat, lon: m.lon, name: m.name }));
-  }, [activeRoute, routeId, lang]);
+  }, [activeRoute, lang]);
 
   const html = useMemo(
     () =>
@@ -109,7 +105,6 @@ export default function MapScreen() {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type === 'MARKER_CLICK') {
-        // Ищем памятник из текущего набора точек
         const allMonuments = getAllMonumentPreviews(lang);
         const monument = allMonuments.find((m) => m.id === data.id);
         if (monument) setSelectedMonument(monument);
@@ -128,12 +123,12 @@ export default function MapScreen() {
     if (routeId) router.push(`/route-info?id=${routeId}`);
   };
 
-  const handleOpenMenu = () => {
-    router.push('/menu');
+  const handleOpenOverview = () => {
+    router.push('/overview');
   };
 
   const handleOpenCamera = () => {
-    router.replace('/camera');
+    router.push('/camera');
   };
 
   const handleOnDetails = () => {
@@ -144,7 +139,7 @@ export default function MapScreen() {
     <View style={styles.container}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-      <MapHeader onMenu={handleOpenMenu} onCamera={handleOpenCamera} colors={colors} t={t} />
+      <MapHeader onOverview={handleOpenOverview} onCamera={handleOpenCamera} colors={colors} t={t} />
 
       <View style={styles.mapWrapper}>
         {activeRoute && (
@@ -152,7 +147,6 @@ export default function MapScreen() {
             <TouchableOpacity onPress={exitRouteMode} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close-circle" size={22} color={colors.textMuted} />
             </TouchableOpacity>
-            {/* Имя маршрута уже переведено в репозитории */}
             <Text style={[styles.routeChipText, { color: colors.text }]} numberOfLines={1}>
               {activeRoute.name}
             </Text>
@@ -182,7 +176,6 @@ export default function MapScreen() {
             colors={colors}
           />
         )}
-
       </View>
     </View>
   );

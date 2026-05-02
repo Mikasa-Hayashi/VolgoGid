@@ -69,6 +69,12 @@
     "details": "Details"
   },
 
+  "tabs": {
+    "overview": "Overview",
+    "map": "Map",
+    "routes": "Routes"
+  },
+
   "monument_fields": {
     "year": "Year of construction/opening",
     "height": "Height",

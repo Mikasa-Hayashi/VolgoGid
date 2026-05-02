@@ -12,9 +12,20 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <Stack screenOptions={{
-          headerShown: false,
-        }}/>
+        <Stack
+          initialRouteName="(tabs)"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="info" />
+          <Stack.Screen name="route-info" />
+          <Stack.Screen name="camera" />
+          <Stack.Screen name="quiz" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="menu" />
+        </Stack>
       </GestureHandlerRootView>
     </ThemeProvider>
   );
