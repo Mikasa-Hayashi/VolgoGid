@@ -52,6 +52,26 @@
     "map": "地图",
     "routes": "路线"
   },
+  "citySelector": {
+    "title": "选择城市",
+    "searchPlaceholder": "搜索城市...",
+    "objectsCount": "{{count}} 个对象",
+    "download": "下载",
+    "downloaded": "已下载",
+    "skip": "跳过",
+    "continue": "继续",
+    "noResults": "未找到城市",
+    "currentCity": "当前城市",
+    "notSelected": "未选择"
+  },
+  "cities": {
+    "volgograd": "伏尔加格勒",
+    "kazan": "喀山",
+    "moscow": "莫斯科",
+    "saint-petersburg": "圣彼得堡",
+    "sochi": "索契",
+    "yekaterinburg": "叶卡捷琳堡"
+  },
   "routes_data": {
     "center": {
       "name": "伏尔加格勒地标",

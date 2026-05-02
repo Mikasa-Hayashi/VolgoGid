@@ -75,6 +75,28 @@
     "routes": "Routes"
   },
 
+  "citySelector": {
+    "title": "Choose City",
+    "searchPlaceholder": "Search city...",
+    "objectsCount": "{{count}} objects",
+    "download": "Download",
+    "downloaded": "Downloaded",
+    "skip": "Skip",
+    "continue": "Continue",
+    "noResults": "No cities found",
+    "currentCity": "Current city",
+    "notSelected": "Not selected"
+  },
+
+  "cities": {
+    "volgograd": "Volgograd",
+    "kazan": "Kazan",
+    "moscow": "Moscow",
+    "saint-petersburg": "Saint Petersburg",
+    "sochi": "Sochi",
+    "yekaterinburg": "Yekaterinburg"
+  },
+
   "monument_fields": {
     "year": "Year of construction/opening",
     "height": "Height",

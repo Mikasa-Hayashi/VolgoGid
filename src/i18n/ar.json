@@ -57,6 +57,28 @@
     "routes": "المسارات"
   },
 
+  "citySelector": {
+    "title": "اختر المدينة",
+    "searchPlaceholder": "ابحث عن مدينة...",
+    "objectsCount": "{{count}} عنصر",
+    "download": "تنزيل",
+    "downloaded": "تم التنزيل",
+    "skip": "تخطي",
+    "continue": "متابعة",
+    "noResults": "لم يتم العثور على مدن",
+    "currentCity": "المدينة الحالية",
+    "notSelected": "غير محددة"
+  },
+
+  "cities": {
+    "volgograd": "فولغوغراد",
+    "kazan": "قازان",
+    "moscow": "موسكو",
+    "saint-petersburg": "سانت بطرسبرغ",
+    "sochi": "سوتشي",
+    "yekaterinburg": "يكاترينبورغ"
+  },
+
   "routes_data": {
     "center": {
       "name": "رموز فولغوغراد",

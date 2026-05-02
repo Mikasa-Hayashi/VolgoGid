@@ -17,6 +17,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme/ThemeContext';
+import { CITIES } from '@/src/data/cities';
+import { getSelectedCityId } from '@/src/storage/citySelection';
+import { useFocusEffect } from '@react-navigation/native';
 
 const OverviewHeader = ({ onSettings, colors, t }: { onSettings(): void; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
@@ -108,6 +111,7 @@ export default function OverviewTabScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const lang = i18n.language;
 
   const allMonuments = useMemo(() => getAllMonumentPreviews(lang), [lang]);
@@ -121,6 +125,17 @@ export default function OverviewTabScreen() {
   }, [searchQuery, lang, allMonuments]);
   const monumentRows = useMemo(() => chunkPairs(filteredMonuments), [filteredMonuments]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadCity = async () => {
+        const cityId = await getSelectedCityId();
+        const city = CITIES.find((c) => c.id === cityId) ?? null;
+        setSelectedCityName(city ? t(`cities.${city.id}`) : null);
+      };
+      loadCity();
+    }, [t]),
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
@@ -133,6 +148,19 @@ export default function OverviewTabScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.topSection}>
+          <TouchableOpacity
+            style={[styles.citySelectorButton, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push('/select-city')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.citySelectorTextWrap}>
+              <Text style={[styles.citySelectorLabel, { color: colors.textMuted }]}>{t('citySelector.currentCity')}</Text>
+              <Text style={[styles.citySelectorValue, { color: colors.text }]}>
+                {selectedCityName ?? t('citySelector.notSelected')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
           <SearchBar value={searchQuery} onChange={setSearchQuery} colors={colors} t={t} />
         </View>
 
@@ -170,6 +198,19 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 40 },
   topSection: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 16 },
+  citySelectorButton: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  citySelectorTextWrap: { flex: 1 },
+  citySelectorLabel: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
+  citySelectorValue: { fontSize: 16, fontWeight: '700' },
   sectionsWrap: { paddingHorizontal: 20 },
   sectionTitle: {
     fontSize: 18,

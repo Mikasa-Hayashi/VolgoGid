@@ -75,6 +75,28 @@
     "routes": "Маршруты"
   },
 
+  "citySelector": {
+    "title": "Выберите город",
+    "searchPlaceholder": "Поиск города...",
+    "objectsCount": "{{count}} объектов",
+    "download": "Скачать",
+    "downloaded": "Скачано",
+    "skip": "Пропустить",
+    "continue": "Продолжить",
+    "noResults": "Города не найдены",
+    "currentCity": "Текущий город",
+    "notSelected": "Не выбран"
+  },
+
+  "cities": {
+    "volgograd": "Волгоград",
+    "kazan": "Казань",
+    "moscow": "Москва",
+    "saint-petersburg": "Санкт-Петербург",
+    "sochi": "Сочи",
+    "yekaterinburg": "Екатеринбург"
+  },
+
   "monument_fields": {
     "year": "Год постройки/открытия",
     "height": "Высота",

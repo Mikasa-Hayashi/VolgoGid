@@ -13,11 +13,13 @@ export default function RootLayout() {
     <ThemeProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack
-          initialRouteName="(tabs)"
+          initialRouteName="index"
           screenOptions={{
             headerShown: false,
           }}
         >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="select-city" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="info" />
           <Stack.Screen name="route-info" />
