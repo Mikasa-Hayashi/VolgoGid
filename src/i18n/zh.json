@@ -37,6 +37,25 @@
     "notFoundMessage": "未找到编号为 \"{{number}}\" 的纪念碑。",
     "routes": "路线"
   },
+  "overview": {
+    "sortRecommended": "推荐排序",
+    "sortName": "A–Z",
+    "sortPopularity": "热度",
+    "filters": "筛选",
+    "tagSearchPlaceholder": "搜索标签...",
+    "showMore": "展开",
+    "showLess": "收起",
+    "clearFilters": "清除筛选",
+    "tags": {
+      "top": "精选",
+      "museums": "博物馆",
+      "memorials": "纪念馆",
+      "nature": "自然与景观",
+      "architecture": "建筑",
+      "parks": "公园",
+      "history": "历史"
+    }
+  },
   "route_info": {
     "openOnMap": "在地图中打开",
     "about": "关于路线",

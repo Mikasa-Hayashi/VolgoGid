@@ -39,6 +39,26 @@
     "routes": "المسارات"
   },
 
+  "overview": {
+    "sortRecommended": "موصى به",
+    "sortName": "أ–ي",
+    "sortPopularity": "الأكثر شعبية",
+    "filters": "عوامل التصفية",
+    "tagSearchPlaceholder": "بحث في الوسوم...",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "clearFilters": "مسح عوامل التصفية",
+    "tags": {
+      "top": "مميز",
+      "museums": "متاحف",
+      "memorials": "نصب تذكارية",
+      "nature": "طبيعة وإطلالات",
+      "architecture": "عمارة",
+      "parks": "حدائق",
+      "history": "تاريخ"
+    }
+  },
+
   "route_info": {
     "openOnMap": "فتح على الخريطة",
     "about": "عن المسار",

@@ -14,12 +14,14 @@
  *   }
  */
 
-import { initDatabase, isSeeded } from './database';
+import { initDatabase, isSeeded, migrateMonumentsFilterColumns } from './database';
+import { syncMonumentFilterMetadata } from './monumentRepository';
 import { seedDatabase } from './seed';
 
 export function setupDatabase(): void {
   // 1. Создаём таблицы (если нет)
   initDatabase();
+  migrateMonumentsFilterColumns();
 
   // 2. Заливаем начальные данные (только при первом запуске)
   if (!isSeeded()) {
@@ -29,6 +31,8 @@ export function setupDatabase(): void {
   } else {
     console.log('[DB] Database already seeded.');
   }
+
+  syncMonumentFilterMetadata();
 }
 
 

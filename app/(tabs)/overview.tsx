@@ -1,4 +1,5 @@
 import { getAllMonumentPreviews, MonumentPreview, searchMonuments } from '@/src/db/monumentRepository';
+import { MONUMENT_TAG_IDS } from '@/src/data/monumentFilterMeta';
 import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -20,6 +21,8 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { CITIES } from '@/src/data/cities';
 import { getSelectedCityId } from '@/src/storage/citySelection';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
+
+type SortMode = 'default' | 'name' | 'popularity';
 
 const OverviewHeader = ({ onSettings, colors, t }: { onSettings(): void; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
@@ -114,10 +117,16 @@ export default function OverviewTabScreen() {
   useScrollToTop(scrollRef);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>('default');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [tagSearchQuery, setTagSearchQuery] = useState('');
   const lang = i18n.language;
 
   const allMonuments = useMemo(() => getAllMonumentPreviews(lang), [lang]);
-  const filteredMonuments = useMemo(() => {
+
+  const textFiltered = useMemo(() => {
     const query = searchQuery.trim();
     if (query === '') return allMonuments;
     const byName = searchMonuments(query, lang);
@@ -125,7 +134,46 @@ export default function OverviewTabScreen() {
     const ids = new Set(byName.map((m) => m.id));
     return [...byName, ...byId.filter((m) => !ids.has(m.id))];
   }, [searchQuery, lang, allMonuments]);
+
+  const tagFiltered = useMemo(() => {
+    if (selectedTags.length === 0) return textFiltered;
+    return textFiltered.filter((m) => m.tags.some((tag) => selectedTags.includes(tag)));
+  }, [textFiltered, selectedTags]);
+
+  const filteredMonuments = useMemo(() => {
+    const list = [...tagFiltered];
+    if (sortMode === 'name') {
+      list.sort((a, b) => a.name.localeCompare(b.name, lang, { sensitivity: 'base' }));
+    } else if (sortMode === 'popularity') {
+      list.sort(
+        (a, b) =>
+          b.popularity - a.popularity || a.name.localeCompare(b.name, lang, { sensitivity: 'base' }),
+      );
+    } else {
+      list.sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
+    }
+    return list;
+  }, [tagFiltered, sortMode, lang]);
+
   const monumentRows = useMemo(() => chunkPairs(filteredMonuments), [filteredMonuments]);
+
+  const visibleTagIds = useMemo(() => {
+    const q = tagSearchQuery.trim().toLowerCase();
+    return MONUMENT_TAG_IDS.filter((id) => {
+      if (!q) return true;
+      const label = t(`overview.tags.${id}`).toLowerCase();
+      return label.includes(q);
+    });
+  }, [tagSearchQuery, t]);
+
+  const displayedTagIds = useMemo(
+    () => (tagsExpanded ? visibleTagIds : visibleTagIds.slice(0, 4)),
+    [visibleTagIds, tagsExpanded],
+  );
+
+  const toggleTag = (id: string) => {
+    setSelectedTags((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -137,6 +185,12 @@ export default function OverviewTabScreen() {
       loadCity();
     }, [t]),
   );
+
+  const sortOptions: { mode: SortMode; labelKey: string }[] = [
+    { mode: 'default', labelKey: 'overview.sortRecommended' },
+    { mode: 'name', labelKey: 'overview.sortName' },
+    { mode: 'popularity', labelKey: 'overview.sortPopularity' },
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -164,7 +218,118 @@ export default function OverviewTabScreen() {
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
-          <SearchBar value={searchQuery} onChange={setSearchQuery} colors={colors} t={t} />
+
+          <View style={styles.searchRow}>
+            <View style={styles.searchRowInputWrap}>
+              <SearchBar value={searchQuery} onChange={setSearchQuery} colors={colors} t={t} />
+            </View>
+            <TouchableOpacity
+              onPress={() => setFilterPanelOpen((o) => !o)}
+              style={[
+                styles.filterButton,
+                { backgroundColor: colors.card, borderColor: selectedTags.length ? colors.primary : colors.border },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={t('overview.filters')}
+            >
+              <Ionicons name="funnel-outline" size={22} color={colors.text} />
+              {selectedTags.length > 0 ? (
+                <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.filterBadgeText, { color: colors.oppositeText }]}>{selectedTags.length}</Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.sortRow}>
+            {sortOptions.map(({ mode, labelKey }) => {
+              const active = sortMode === mode;
+              return (
+                <TouchableOpacity
+                  key={mode}
+                  onPress={() => setSortMode(mode)}
+                  style={[
+                    styles.sortChip,
+                    {
+                      borderColor: active ? colors.primary : colors.border,
+                      backgroundColor: active ? colors.card : 'transparent',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.sortChipText, { color: active ? colors.primary : colors.textMuted }]}
+                    numberOfLines={1}
+                  >
+                    {t(labelKey)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {filterPanelOpen ? (
+            <View style={[styles.filterPanel, { borderColor: colors.border, backgroundColor: colors.card }]}>
+              <View style={[styles.tagSearchContainer, { backgroundColor: colors.background }]}>
+                <Ionicons name="pricetag-outline" size={18} color={colors.textMuted} style={styles.tagSearchIcon} />
+                <TextInput
+                  style={[styles.tagSearchInput, { color: colors.text }]}
+                  placeholder={t('overview.tagSearchPlaceholder')}
+                  placeholderTextColor={colors.textMuted}
+                  value={tagSearchQuery}
+                  onChangeText={setTagSearchQuery}
+                  returnKeyType="done"
+                />
+                {tagSearchQuery.length > 0 ? (
+                  <TouchableOpacity onPress={() => setTagSearchQuery('')}>
+                    <Ionicons name="close-circle" size={18} color={colors.textMuted} />
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+
+              <View style={styles.tagChipsWrap}>
+                {displayedTagIds.map((tagId) => {
+                  const selected = selectedTags.includes(tagId);
+                  return (
+                    <TouchableOpacity
+                      key={tagId}
+                      onPress={() => toggleTag(tagId)}
+                      style={[
+                        styles.tagChip,
+                        {
+                          borderColor: selected ? colors.primary : colors.border,
+                          backgroundColor: selected ? colors.primary : 'transparent',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[styles.tagChipText, { color: selected ? colors.oppositeText : colors.text }]}
+                        numberOfLines={1}
+                      >
+                        {t(`overview.tags.${tagId}`)}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {visibleTagIds.length > 4 ? (
+                <TouchableOpacity onPress={() => setTagsExpanded((e) => !e)} style={styles.showMoreBtn}>
+                  <Text style={[styles.showMoreText, { color: colors.primary }]}>
+                    {t(tagsExpanded ? 'overview.showLess' : 'overview.showMore')}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+
+              {selectedTags.length > 0 ? (
+                <TouchableOpacity
+                  onPress={() => setSelectedTags([])}
+                  style={styles.clearFiltersBtn}
+                >
+                  <Text style={[styles.clearFiltersText, { color: colors.textMuted }]}>{t('overview.clearFilters')}</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.sectionsWrap}>
@@ -214,6 +379,66 @@ const styles = StyleSheet.create({
   citySelectorTextWrap: { flex: 1 },
   citySelectorLabel: { fontSize: 12, fontWeight: '600', marginBottom: 2 },
   citySelectorValue: { fontSize: 16, fontWeight: '700' },
+  searchRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  searchRowInputWrap: { flex: 1, minWidth: 0 },
+  filterButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginLeft: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  filterBadgeText: { fontSize: 11, fontWeight: '800' },
+  sortRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  sortChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  sortChipText: { fontSize: 13, fontWeight: '600' },
+  filterPanel: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 4,
+  },
+  tagSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    height: 44,
+    marginBottom: 12,
+  },
+  tagSearchIcon: { marginRight: 8 },
+  tagSearchInput: { flex: 1, fontSize: 15, height: '100%' },
+  tagChipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tagChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    maxWidth: '100%',
+  },
+  tagChipText: { fontSize: 13, fontWeight: '600' },
+  showMoreBtn: { marginTop: 10, alignSelf: 'flex-start' },
+  showMoreText: { fontSize: 14, fontWeight: '700' },
+  clearFiltersBtn: { marginTop: 8, alignSelf: 'flex-start' },
+  clearFiltersText: { fontSize: 14, fontWeight: '600' },
   sectionsWrap: { paddingHorizontal: 20 },
   sectionTitle: {
     fontSize: 18,

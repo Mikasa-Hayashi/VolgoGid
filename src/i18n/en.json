@@ -42,6 +42,26 @@
     "routes": "Routes"
   },
 
+  "overview": {
+    "sortRecommended": "Recommended",
+    "sortName": "A–Z",
+    "sortPopularity": "Popular",
+    "filters": "Filters",
+    "tagSearchPlaceholder": "Search tags...",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "clearFilters": "Clear filters",
+    "tags": {
+      "top": "Top picks",
+      "museums": "Museums",
+      "memorials": "Memorials",
+      "nature": "Nature & views",
+      "architecture": "Architecture",
+      "parks": "Parks",
+      "history": "History"
+    }
+  },
+
   "route_info": {
     "openOnMap": "Open on map",
     "about": "About the route",

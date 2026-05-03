@@ -42,6 +42,26 @@
     "routes": "Маршруты"
   },
 
+  "overview": {
+    "sortRecommended": "Как в приложении",
+    "sortName": "А–Я",
+    "sortPopularity": "Популярные",
+    "filters": "Фильтры",
+    "tagSearchPlaceholder": "Поиск по тегам...",
+    "showMore": "Показать ещё",
+    "showLess": "Свернуть",
+    "clearFilters": "Сбросить фильтры",
+    "tags": {
+      "top": "Топ",
+      "museums": "Музеи",
+      "memorials": "Мемориалы",
+      "nature": "Природа и виды",
+      "architecture": "Архитектура",
+      "parks": "Парки",
+      "history": "История"
+    }
+  },
+
   "route_info": {
     "openOnMap": "Открыть на карте",
     "about": "О маршруте",

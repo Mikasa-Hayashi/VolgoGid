@@ -4,7 +4,20 @@
  * Все запросы к SQLite, API такой же как был — компоненты почти не меняются.
  */
 
+import { monumentFilterMeta } from '../data/monumentFilterMeta';
 import { db } from './database';
+
+/** Writes tags_json + popularity from monumentFilterMeta (idempotent; run each launch). */
+export function syncMonumentFilterMetadata(): void {
+  for (const [id, meta] of Object.entries(monumentFilterMeta)) {
+    const tagsJson = JSON.stringify(meta.tags);
+    db.runSync(`UPDATE monuments SET tags_json = ?, popularity = ? WHERE id = ?`, [
+      tagsJson,
+      meta.popularity,
+      id,
+    ]);
+  }
+}
 
 // ─── Типы (совместимы со старым monumentStore) ────────────────────────────────
 
@@ -31,16 +44,58 @@ export type MonumentPreview = {
   lon: number;
   imageUrl: string;
   name: string;
+  tags: string[];
+  popularity: number;
+  sortOrder: number;
 };
 
 // ─── Запросы ──────────────────────────────────────────────────────────────────
 
+function parseTagsJson(raw: string | null | undefined): string[] {
+  if (raw == null || raw === '') return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function mapPreviewRow(r: {
+  id: string;
+  lat: number;
+  lon: number;
+  image_url: string;
+  field_value: string | null;
+  sort_order: number;
+  popularity: number;
+  tags_json: string | null;
+}): MonumentPreview {
+  return {
+    id: r.id,
+    lat: r.lat,
+    lon: r.lon,
+    imageUrl: r.image_url,
+    name: r.field_value ?? '',
+    tags: parseTagsJson(r.tags_json),
+    popularity: r.popularity ?? 0,
+    sortOrder: r.sort_order ?? 0,
+  };
+}
+
 /** Все памятники для списка/карты (без тяжёлых полей) */
 export function getAllMonumentPreviews(lang: string): MonumentPreview[] {
   const rows = db.getAllSync<{
-    id: string; lat: number; lon: number; image_url: string; field_value: string;
+    id: string;
+    lat: number;
+    lon: number;
+    image_url: string;
+    field_value: string | null;
+    sort_order: number;
+    popularity: number;
+    tags_json: string | null;
   }>(
-    `SELECT m.id, m.lat, m.lon, m.image_url, mt.field_value
+    `SELECT m.id, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
      FROM monuments m
      LEFT JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
@@ -48,13 +103,7 @@ export function getAllMonumentPreviews(lang: string): MonumentPreview[] {
     [lang]
   );
 
-  return rows.map(r => ({
-    id: r.id,
-    lat: r.lat,
-    lon: r.lon,
-    imageUrl: r.image_url,
-    name: r.field_value ?? '',
-  }));
+  return rows.map(mapPreviewRow);
 }
 
 /** Один памятник со всеми полями */
@@ -119,9 +168,16 @@ export function getMonumentCoords(id: string): { lat: number; lon: number } | nu
 /** Поиск памятников по имени */
 export function searchMonuments(query: string, lang: string): MonumentPreview[] {
   const rows = db.getAllSync<{
-    id: string; lat: number; lon: number; image_url: string; field_value: string;
+    id: string;
+    lat: number;
+    lon: number;
+    image_url: string;
+    field_value: string;
+    sort_order: number;
+    popularity: number;
+    tags_json: string | null;
   }>(
-    `SELECT m.id, m.lat, m.lon, m.image_url, mt.field_value
+    `SELECT m.id, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
      FROM monuments m
      JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
@@ -130,13 +186,7 @@ export function searchMonuments(query: string, lang: string): MonumentPreview[] 
     [lang, `%${query}%`]
   );
 
-  return rows.map(r => ({
-    id: r.id,
-    lat: r.lat,
-    lon: r.lon,
-    imageUrl: r.image_url,
-    name: r.field_value,
-  }));
+  return rows.map(mapPreviewRow);
 }
 
 /** Ближайшие памятники к точке (GPS-поиск, офлайн) */
@@ -148,9 +198,16 @@ export function getNearbyMonuments(
 ): (MonumentPreview & { distanceKm: number })[] {
   // Формула Хаверсина прямо в SQL (приближённая, достаточна для малых расстояний)
   const rows = db.getAllSync<{
-    id: string; lat: number; lon: number; image_url: string; field_value: string;
+    id: string;
+    lat: number;
+    lon: number;
+    image_url: string;
+    field_value: string | null;
+    sort_order: number;
+    popularity: number;
+    tags_json: string | null;
   }>(
-    `SELECT m.id, m.lat, m.lon, m.image_url, mt.field_value
+    `SELECT m.id, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
      FROM monuments m
      LEFT JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
@@ -169,7 +226,7 @@ export function getNearbyMonuments(
           Math.cos((r.lat * Math.PI) / 180) *
           Math.sin(dLon / 2) ** 2;
       const distanceKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return { id: r.id, lat: r.lat, lon: r.lon, imageUrl: r.image_url, name: r.field_value ?? '', distanceKm };
+      return { ...mapPreviewRow(r), distanceKm };
     })
     .filter(r => r.distanceKm <= radiusKm)
     .sort((a, b) => a.distanceKm - b.distanceKm);

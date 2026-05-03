@@ -81,6 +81,21 @@ export function initDatabase(): void {
   `);
 }
 
+function monumentsHasColumn(name: string): boolean {
+  const rows = db.getAllSync<{ name: string }>('PRAGMA table_info(monuments)');
+  return rows.some((r) => r.name === name);
+}
+
+/** Adds popularity / tags_json for filters (idempotent for existing DBs). */
+export function migrateMonumentsFilterColumns(): void {
+  if (!monumentsHasColumn('popularity')) {
+    db.execSync('ALTER TABLE monuments ADD COLUMN popularity INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!monumentsHasColumn('tags_json')) {
+    db.execSync(`ALTER TABLE monuments ADD COLUMN tags_json TEXT NOT NULL DEFAULT '[]'`);
+  }
+}
+
 /** Проверяет, была ли уже выполнена начальная загрузка данных */
 export function isSeeded(): boolean {
   const row = db.getFirstSync<{ value: string }>(
