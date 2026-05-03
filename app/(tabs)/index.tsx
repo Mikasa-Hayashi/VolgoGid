@@ -124,7 +124,7 @@ export default function MapTabScreen() {
   };
 
   const handleOpenOverview = () => {
-    router.push('/overview');
+    router.navigate('/overview');
   };
 
   const handleOpenCamera = () => {

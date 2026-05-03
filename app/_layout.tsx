@@ -19,8 +19,20 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" />
-          <Stack.Screen name="select-city" />
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="select-city"
+            options={{
+              presentation: "modal",
+              animation: "slide_from_bottom",
+            }}
+          />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              gestureEnabled: false,
+              animationTypeForReplace: "pop",
+            }}
+          />
           <Stack.Screen name="info" />
           <Stack.Screen name="route-info" />
           <Stack.Screen name="camera" />
