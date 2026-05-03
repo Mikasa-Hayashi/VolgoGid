@@ -3,7 +3,8 @@ import { headerStyles } from '@/src/theme/headerStyles';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import { useScrollToTop } from '@react-navigation/native';
+import React, { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
@@ -60,6 +61,8 @@ export default function RoutesTabScreen() {
   const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
 
   const routes = useMemo(() => getAllRoutes(i18n.language), [i18n.language]);
 
@@ -69,6 +72,7 @@ export default function RoutesTabScreen() {
       <RoutesHeader onSettings={() => router.push('/settings')} colors={colors} t={t} />
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

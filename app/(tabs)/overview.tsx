@@ -2,7 +2,7 @@ import { getAllMonumentPreviews, MonumentPreview, searchMonuments } from '@/src/
 import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { CITIES } from '@/src/data/cities';
 import { getSelectedCityId } from '@/src/storage/citySelection';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 
 const OverviewHeader = ({ onSettings, colors, t }: { onSettings(): void; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
@@ -110,6 +110,8 @@ export default function OverviewTabScreen() {
   const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const lang = i18n.language;
@@ -142,6 +144,7 @@ export default function OverviewTabScreen() {
       <OverviewHeader onSettings={() => router.push('/settings')} colors={colors} t={t} />
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
