@@ -106,12 +106,13 @@
   },
 
   "cities": {
+    "maykop": "مايكوب",
+    "astrakhan": "أستراخان",
     "volgograd": "فولغوغراد",
-    "kazan": "قازان",
-    "moscow": "موسكو",
-    "saint-petersburg": "سانت بطرسبرغ",
-    "sochi": "سوتشي",
-    "yekaterinburg": "يكاترينبورغ"
+    "elista": "إليستا",
+    "krasnodar": "كراسنودار",
+    "rostov-on-don": "روستوف على الدون",
+    "sevastopol": "سيفاستوبول"
   },
 
   "routes_data": {

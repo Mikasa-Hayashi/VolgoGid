@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CITIES } from '@/src/data/cities';
 
 const ONBOARDING_DONE_KEY = 'citySelection.onboardingDone';
 const SELECTED_CITY_ID_KEY = 'citySelection.selectedCityId';
 const DOWNLOADED_CITY_IDS_KEY = 'citySelection.downloadedCityIds';
+const AVAILABLE_CITY_IDS = new Set(CITIES.map((city) => city.id));
 
 export async function getOnboardingDone(): Promise<boolean> {
   const value = await AsyncStorage.getItem(ONBOARDING_DONE_KEY);
@@ -14,7 +16,10 @@ export async function setOnboardingDone(done: boolean): Promise<void> {
 }
 
 export async function getSelectedCityId(): Promise<string | null> {
-  return AsyncStorage.getItem(SELECTED_CITY_ID_KEY);
+  const cityId = await AsyncStorage.getItem(SELECTED_CITY_ID_KEY);
+  if (!cityId || AVAILABLE_CITY_IDS.has(cityId)) return cityId;
+  await AsyncStorage.removeItem(SELECTED_CITY_ID_KEY);
+  return null;
 }
 
 export async function setSelectedCityId(cityId: string): Promise<void> {
@@ -26,7 +31,13 @@ export async function getDownloadedCityIds(): Promise<string[]> {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+    const filtered = Array.isArray(parsed)
+      ? parsed.filter((x): x is string => typeof x === 'string' && AVAILABLE_CITY_IDS.has(x))
+      : [];
+    if (Array.isArray(parsed) && filtered.length !== parsed.length) {
+      await AsyncStorage.setItem(DOWNLOADED_CITY_IDS_KEY, JSON.stringify(filtered));
+    }
+    return filtered;
   } catch {
     return [];
   }

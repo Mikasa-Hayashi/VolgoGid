@@ -123,12 +123,13 @@
   },
 
   "cities": {
+    "maykop": "Maykop",
+    "astrakhan": "Astrakhan",
     "volgograd": "Volgograd",
-    "kazan": "Kazan",
-    "moscow": "Moscow",
-    "saint-petersburg": "Saint Petersburg",
-    "sochi": "Sochi",
-    "yekaterinburg": "Yekaterinburg"
+    "elista": "Elista",
+    "krasnodar": "Krasnodar",
+    "rostov-on-don": "Rostov-on-Don",
+    "sevastopol": "Sevastopol"
   },
 
   "monument_fields": {

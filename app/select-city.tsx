@@ -83,7 +83,7 @@ const CityRow = ({
 
 export default function SelectCityScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const [search, setSearch] = useState('');
   const [selectedCityId, setSelectedCityIdState] = useState<string | null>(null);
@@ -102,9 +102,11 @@ export default function SelectCityScreen() {
 
   const filteredCities = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return CITIES;
-    return CITIES.filter((city) => cityNameById(city.id).toLowerCase().includes(q));
-  }, [search, t]);
+    const base = !q ? CITIES : CITIES.filter((city) => cityNameById(city.id).toLowerCase().includes(q));
+    return [...base].sort((a, b) =>
+      cityNameById(a.id).localeCompare(cityNameById(b.id), i18n.language, { sensitivity: 'base' }),
+    );
+  }, [search, t, i18n.language]);
 
   const handleSkip = async () => {
     await setOnboardingDone(true);

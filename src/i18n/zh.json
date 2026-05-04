@@ -98,12 +98,13 @@
     "notSelected": "未选择"
   },
   "cities": {
+    "maykop": "迈科普",
+    "astrakhan": "阿斯特拉罕",
     "volgograd": "伏尔加格勒",
-    "kazan": "喀山",
-    "moscow": "莫斯科",
-    "saint-petersburg": "圣彼得堡",
-    "sochi": "索契",
-    "yekaterinburg": "叶卡捷琳堡"
+    "elista": "埃利斯塔",
+    "krasnodar": "克拉斯诺达尔",
+    "rostov-on-don": "顿河畔罗斯托夫",
+    "sevastopol": "塞瓦斯托波尔"
   },
   "routes_data": {
     "center": {
