@@ -28,7 +28,22 @@
     "audioGuide": "استمع إلى الدليل الصوتي",
     "historyInfo": "التاريخ والمعلومات",
     "architectureDetails": "تفاصيل معمارية",
-    "tourismInfo": "معلومات للسياح"
+    "tourismInfo": "معلومات للسياح",
+    "play_quiz": "ابدأ الاختبار"
+  },
+
+  "quiz": {
+    "title": "اختبار",
+    "factQuestion": "بالنسبة إلى {{name}}، ما القيمة الصحيحة للحقل «{{label}}»؟",
+    "progress": "السؤال {{current}} من {{total}}",
+    "next": "التالي",
+    "finish": "إنهاء",
+    "completedTitle": "اكتمل الاختبار!",
+    "score": "نتيجتك: {{score}} من {{total}}",
+    "backToMonument": "العودة إلى المعلم",
+    "retry": "إعادة المحاولة",
+    "unavailableTitle": "الاختبار غير متاح الآن",
+    "unavailableText": "لا توجد معلومات كافية بعد لإنشاء اختبار لهذا المعلم."
   },
 
   "menu": {
@@ -141,6 +156,8 @@
     "main_exhibitions": "المعارض الرئيسية",
     "technologies": "تقنيات العرض",
     "ticket_prices": "سعر التذكرة",
-    "guided_tours": "الجولات الإرشادية"
+    "guided_tours": "الجولات الإرشادية",
+    "additional_features": "عناصر إضافية",
+    "opening_date": "تاريخ الافتتاح"
   }
 }

@@ -1,30 +1,20 @@
-import { headerStyles } from '@/src/theme/headerStyles'; // Проверь путь
+import { getQuizQuestions } from '@/src/data/quiz';
+import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../src/theme/ThemeContext'; // Проверь путь
+import { useTheme } from '../src/theme/ThemeContext';
 
-// --- Временные моковые данные для квиза ---
-// Позже мы сможем вынести их в наш JSON, чтобы переводить вопросы и ответы
-const MOCK_QUIZ = [
-  { question: "К какому событию было приурочено открытие памятника первому трамваю в Волгограде?", options: ["К 50‑летию пуска трамвайного движения в городе.", "К 100‑летию пуска трамвайного движения в городе.", "К юбилею Комсомольского сада, где установлен памятник.", "К годовщине Сталинградской битвы."], correctIndex: 1 },
-  { question: "Какова высота монумента?", options: ["50 метров", "85 метров", "100 метров", "120 метров"], correctIndex: 1 },
-  { question: "Кто был главным скульптором?", options: ["Церетели", "Мухина", "Вучетич", "Эрзя"], correctIndex: 2 },
-  { question: "Из какого материала сделана основная часть?", options: ["Бронза", "Мрамор", "Сталь", "Железобетон"], correctIndex: 3 },
-  { question: "Сколько ступеней ведут к монументу?", options: ["100", "200", "250", "300"], correctIndex: 1 },
-];
-
-// --- Хедер (адаптирован из твоего MenuHeader) ---
 const QuizHeader = ({ onBack, title, colors, t }: { onBack(): void; title: string; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
     <View style={headerStyles.headerContent}>
@@ -45,34 +35,30 @@ const QuizHeader = ({ onBack, title, colors, t }: { onBack(): void; title: strin
 export default function QuizScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
-  const { t } = useTranslation();
-  
-  // Получаем ID и название памятника из параметров роута
-  // Например: router.push({ pathname: '/quiz', params: { id: '1', name: 'Родина-мать зовёт!' } })
+  const { t, i18n } = useTranslation();
   const { id, name } = useLocalSearchParams<{ id: string, name: string }>();
+  const quizQuestions = id ? getQuizQuestions({ monumentId: id, lang: i18n.language, t }) : [];
 
-  // --- Состояния квиза ---
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
-  const currentQuestion = MOCK_QUIZ[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === MOCK_QUIZ.length - 1;
+  const currentQuestion = quizQuestions[currentQuestionIndex];
+  const isLastQuestion = currentQuestionIndex === quizQuestions.length - 1;
+  const quizTitle = name || t('quiz.title');
 
   const handleBack = () => {
     router.back();
   };
 
   const handleNext = () => {
-    if (selectedOption === null) return; // Защита: нельзя нажать далее без ответа
+    if (selectedOption === null || !currentQuestion) return;
 
-    // Проверяем правильность
     if (selectedOption === currentQuestion.correctIndex) {
       setScore(prev => prev + 1);
     }
 
-    // Идем дальше или завершаем
     if (isLastQuestion) {
       setIsFinished(true);
     } else {
@@ -88,53 +74,75 @@ export default function QuizScreen() {
     setIsFinished(false);
   };
 
-  // --- Экран результатов ---
+  if (!id) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (quizQuestions.length === 0) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+        <QuizHeader onBack={handleBack} title={quizTitle} colors={colors} t={t} />
+        <View style={[styles.emptyState, { padding: 20 }]}>
+          <Ionicons name="alert-circle-outline" size={72} color={colors.primary} />
+          <Text style={[styles.resultTitle, { color: colors.text }]}>{t('quiz.unavailableTitle')}</Text>
+          <Text style={[styles.resultText, { color: colors.textMuted, textAlign: 'center' }]}>
+            {t('quiz.unavailableText')}
+          </Text>
+          <TouchableOpacity style={[styles.nextButton, { backgroundColor: colors.primary, marginTop: 32, width: '100%' }]} onPress={handleBack}>
+            <Text style={styles.nextButtonText}>{t('quiz.backToMonument')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   if (isFinished) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
         <Ionicons name="trophy" size={80} color={colors.primary} style={{ marginBottom: 20 }} />
-        <Text style={[styles.resultTitle, { color: colors.text }]}>Квиз завершен!</Text>
+        <Text style={[styles.resultTitle, { color: colors.text }]}>{t('quiz.completedTitle')}</Text>
         <Text style={[styles.resultText, { color: colors.textMuted }]}>
-          Твой результат: {score} из {MOCK_QUIZ.length}
+          {t('quiz.score', { score, total: quizQuestions.length })}
         </Text>
-        
+
         <TouchableOpacity style={[styles.nextButton, { backgroundColor: colors.primary, marginTop: 40, width: '100%' }]} onPress={handleBack}>
-          <Text style={styles.nextButtonText}>Вернуться к памятнику</Text>
+          <Text style={styles.nextButtonText}>{t('quiz.backToMonument')}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={{ marginTop: 20 }} onPress={restartQuiz}>
-          <Text style={{ color: colors.primary, fontSize: 16, fontWeight: 'bold' }}>Пройти еще раз</Text>
+          <Text style={{ color: colors.primary, fontSize: 16, fontWeight: 'bold' }}>{t('quiz.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // --- Основной экран квиза ---
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-      
-      <QuizHeader onBack={handleBack} title={name || "Квиз"} colors={colors} t={t} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+
+      <QuizHeader onBack={handleBack} title={quizTitle} colors={colors} t={t} />
 
       <View style={styles.content}>
-        {/* Прогресс */}
         <Text style={[styles.progressText, { color: colors.textMuted }]}>
-          Вопрос {currentQuestionIndex + 1} из {MOCK_QUIZ.length}
+          {t('quiz.progress', { current: currentQuestionIndex + 1, total: quizQuestions.length })}
         </Text>
-        
+
         <View style={styles.progressBarBg}>
           <View style={[
             styles.progressBarFill, 
-            { backgroundColor: colors.primary, width: `${((currentQuestionIndex + 1) / MOCK_QUIZ.length) * 100}%` }
+            { backgroundColor: colors.primary, width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }
           ]} />
         </View>
 
-        {/* Вопрос */}
         <Text style={[styles.questionText, { color: colors.text }]}>
           {currentQuestion.question}
         </Text>
 
-        {/* Варианты ответов */}
         <View style={styles.optionsContainer}>
           {currentQuestion.options.map((option, index) => {
             const isSelected = selectedOption === index;
@@ -144,7 +152,7 @@ export default function QuizScreen() {
                 style={[
                   styles.optionButton,
                   { borderColor: colors.border },
-                  isSelected && { borderColor: colors.primary, backgroundColor: colors.primary + '20' } // '20' добавляет прозрачность
+                  isSelected && { borderColor: colors.primary, backgroundColor: colors.primary + '20' }
                 ]}
                 onPress={() => setSelectedOption(index)}
               >
@@ -176,15 +184,13 @@ export default function QuizScreen() {
             styles.nextButtonText, 
             { color: selectedOption !== null ? 'black' : colors.textMuted }
           ]}>
-            {isLastQuestion ? "Завершить" : "Далее"}
+            {isLastQuestion ? t('quiz.finish') : t('quiz.next')}
           </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -269,5 +275,11 @@ const styles = StyleSheet.create({
   },
   resultText: {
     fontSize: 18,
-  }
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
 });

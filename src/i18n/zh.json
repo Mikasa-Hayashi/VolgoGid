@@ -28,7 +28,21 @@
     "audioGuide": "收听语音导览",
     "historyInfo": "历史与信息",
     "architectureDetails": "建筑细节",
-    "tourismInfo": "旅游信息"
+    "tourismInfo": "旅游信息",
+    "play_quiz": "开始测验"
+  },
+  "quiz": {
+    "title": "测验",
+    "factQuestion": "关于{{name}}，以下哪一项是“{{label}}”的正确值？",
+    "progress": "第 {{current}} / {{total}} 题",
+    "next": "下一题",
+    "finish": "完成",
+    "completedTitle": "测验已完成！",
+    "score": "你的得分：{{score}} / {{total}}",
+    "backToMonument": "返回景点",
+    "retry": "再试一次",
+    "unavailableTitle": "测验暂不可用",
+    "unavailableText": "当前还没有足够的信息为这个景点生成测验。"
   },
   "menu": {
     "searchPlaceholder": "按编号或名称搜索...",
@@ -132,6 +146,8 @@
     "main_exhibitions": "主要展览",
     "technologies": "展陈技术",
     "ticket_prices": "票价",
-    "guided_tours": "导览服务"
+    "guided_tours": "导览服务",
+    "additional_features": "附加元素",
+    "opening_date": "开放日期"
   }
 }

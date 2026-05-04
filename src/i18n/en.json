@@ -32,6 +32,20 @@
     "play_quiz": "Take the Quiz"
   },
 
+  "quiz": {
+    "title": "Quiz",
+    "factQuestion": "For {{name}}, which value is correct for \"{{label}}\"?",
+    "progress": "Question {{current}} of {{total}}",
+    "next": "Next",
+    "finish": "Finish",
+    "completedTitle": "Quiz completed!",
+    "score": "Your score: {{score}} out of {{total}}",
+    "backToMonument": "Back to monument",
+    "retry": "Try again",
+    "unavailableTitle": "Quiz unavailable",
+    "unavailableText": "There are not enough facts yet to build a quiz for this monument."
+  },
+
   "menu": {
     "searchPlaceholder": "Search by number or name...",
     "monuments": "Monuments",

@@ -32,6 +32,20 @@
     "play_quiz": "Пройти викторину"
   },
 
+  "quiz": {
+    "title": "Викторина",
+    "factQuestion": "Для «{{name}}», какое значение верно для поля «{{label}}»?",
+    "progress": "Вопрос {{current}} из {{total}}",
+    "next": "Далее",
+    "finish": "Завершить",
+    "completedTitle": "Викторина завершена!",
+    "score": "Твой результат: {{score}} из {{total}}",
+    "backToMonument": "Вернуться к памятнику",
+    "retry": "Пройти еще раз",
+    "unavailableTitle": "Викторина пока недоступна",
+    "unavailableText": "Для этого памятника пока не удалось собрать достаточно вопросов."
+  },
+
   "menu": {
     "searchPlaceholder": "Поиск по номеру или названию...",
     "monuments": "Монументы",
