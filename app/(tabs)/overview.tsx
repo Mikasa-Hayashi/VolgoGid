@@ -56,7 +56,7 @@ const SearchBar = ({
     <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
     <TextInput
       style={[styles.searchInput, { color: colors.text }]}
-      placeholder={t('menu.searchPlaceholder')}
+      placeholder="Search"
       placeholderTextColor={colors.textMuted}
       value={value}
       onChangeText={onChange}
@@ -86,9 +86,6 @@ const MonumentCard = ({
   >
     <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
     <View style={styles.cardOverlay}>
-      <View style={styles.badgeContainer}>
-        <Text style={[styles.badgeText, { color: colors.primary }]}>#{item.id}</Text>
-      </View>
       <Text style={styles.cardTitle} numberOfLines={2}>
         {item.name}
       </Text>
@@ -129,10 +126,7 @@ export default function OverviewTabScreen() {
   const textFiltered = useMemo(() => {
     const query = searchQuery.trim();
     if (query === '') return allMonuments;
-    const byName = searchMonuments(query, lang);
-    const byId = allMonuments.filter((m) => m.id.toLowerCase().includes(query.toLowerCase()));
-    const ids = new Set(byName.map((m) => m.id));
-    return [...byName, ...byId.filter((m) => !ids.has(m.id))];
+    return searchMonuments(query, lang);
   }, [searchQuery, lang, allMonuments]);
 
   const tagFiltered = useMemo(() => {
@@ -465,17 +459,9 @@ const styles = StyleSheet.create({
   cardOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     padding: 12,
   },
-  badgeContainer: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  badgeText: { fontWeight: 'bold', fontSize: 12 },
   cardTitle: {
     color: 'white',
     fontSize: 16,
