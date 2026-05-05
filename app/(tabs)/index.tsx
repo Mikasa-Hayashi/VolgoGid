@@ -6,6 +6,7 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
@@ -17,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
+import { getSelectedCityId } from '@/src/storage/citySelection';
 
 const MapHeader = ({ onOverview, onCamera, colors, t }: { onOverview(): void; onCamera(): void; colors: any; t: any }) => (
   <SafeAreaView edges={['top']} style={[headerStyles.headerContainer, { backgroundColor: colors.background }]}>
@@ -73,6 +75,7 @@ export default function MapTabScreen() {
   const router = useRouter();
   const webviewRef = useRef<WebView>(null);
   const { routeId } = useLocalSearchParams<{ routeId?: string }>();
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
   const [selectedMonument, setSelectedMonument] = useState<MonumentPreview | null>(null);
   const lang = i18n.language;
@@ -87,10 +90,10 @@ export default function MapTabScreen() {
       return getResolvedRouteMapPoints(activeRoute.id, lang);
     }
 
-    return getAllMonumentPreviews(lang)
+    return getAllMonumentPreviews(lang, selectedCityId)
       .filter((m) => m.lat && m.lon)
       .map((m) => ({ id: m.id, lat: m.lat, lon: m.lon, name: m.name }));
-  }, [activeRoute, lang]);
+  }, [activeRoute, lang, selectedCityId]);
 
   const html = useMemo(
     () =>
@@ -105,7 +108,7 @@ export default function MapTabScreen() {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       if (data.type === 'MARKER_CLICK') {
-        const allMonuments = getAllMonumentPreviews(lang);
+        const allMonuments = getAllMonumentPreviews(lang, selectedCityId);
         const monument = allMonuments.find((m) => m.id === data.id);
         if (monument) setSelectedMonument(monument);
       }
@@ -113,6 +116,15 @@ export default function MapTabScreen() {
       console.log('Error parsing WebView message', e);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const load = async () => {
+        setSelectedCityId(await getSelectedCityId());
+      };
+      load();
+    }, []),
+  );
 
   const exitRouteMode = () => {
     setSelectedMonument(null);

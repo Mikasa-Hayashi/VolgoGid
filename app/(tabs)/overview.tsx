@@ -113,6 +113,7 @@ export default function OverviewTabScreen() {
   const scrollRef = useRef<ScrollView>(null);
   useScrollToTop(scrollRef);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>('default');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -121,13 +122,13 @@ export default function OverviewTabScreen() {
   const [tagSearchQuery, setTagSearchQuery] = useState('');
   const lang = i18n.language;
 
-  const allMonuments = useMemo(() => getAllMonumentPreviews(lang), [lang]);
+  const allMonuments = useMemo(() => getAllMonumentPreviews(lang, selectedCityId), [lang, selectedCityId]);
 
   const textFiltered = useMemo(() => {
     const query = searchQuery.trim();
     if (query === '') return allMonuments;
-    return searchMonuments(query, lang);
-  }, [searchQuery, lang, allMonuments]);
+    return searchMonuments(query, lang, selectedCityId);
+  }, [searchQuery, lang, allMonuments, selectedCityId]);
 
   const tagFiltered = useMemo(() => {
     if (selectedTags.length === 0) return textFiltered;
@@ -173,6 +174,7 @@ export default function OverviewTabScreen() {
     React.useCallback(() => {
       const loadCity = async () => {
         const cityId = await getSelectedCityId();
+        setSelectedCityId(cityId);
         const city = CITIES.find((c) => c.id === cityId) ?? null;
         setSelectedCityName(city ? t(`cities.${city.id}`) : null);
       };

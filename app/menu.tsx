@@ -4,6 +4,7 @@ import { headerStyles } from '@/src/theme/headerStyles';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
@@ -18,6 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../src/theme/ThemeContext';
+import { getSelectedCityId } from '@/src/storage/citySelection';
 
 const MenuHeader = ({
   onBack,
@@ -175,27 +177,37 @@ export default function MonumentsScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [monumentsExpanded, setMonumentsExpanded] = useState(true);
   const [routesExpanded, setRoutesExpanded] = useState(true);
 
   const lang = i18n.language;
 
   // Загружаем все памятники из SQLite с нужным языком
-  const allMonuments = useMemo(() => getAllMonumentPreviews(lang), [lang]);
+  const allMonuments = useMemo(() => getAllMonumentPreviews(lang, selectedCityId), [lang, selectedCityId]);
 
   // Фильтрация: searchMonuments делает запрос в SQLite через LIKE
   const filteredMonuments = useMemo(() => {
     const query = searchQuery.trim();
     if (query === '') return allMonuments;
     // Поиск по имени (SQLite LIKE) + по id локально
-    const byName = searchMonuments(query, lang);
+    const byName = searchMonuments(query, lang, selectedCityId);
     const byId = allMonuments.filter((m) =>
       m.id.toLowerCase().includes(query.toLowerCase()),
     );
     // Объединяем без дублей
     const ids = new Set(byName.map((m) => m.id));
     return [...byName, ...byId.filter((m) => !ids.has(m.id))];
-  }, [searchQuery, lang, allMonuments]);
+  }, [searchQuery, lang, allMonuments, selectedCityId]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const load = async () => {
+        setSelectedCityId(await getSelectedCityId());
+      };
+      load();
+    }, []),
+  );
 
   const monumentRows = useMemo(() => chunkPairs(filteredMonuments), [filteredMonuments]);
 

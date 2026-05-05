@@ -8,6 +8,7 @@
  */
 
 import { db, markSeeded } from './database';
+import { CITIES } from '../data/cities';
 
 // ─── Типы ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ type FieldConfigItem = {
 
 type MonumentSeed = {
   id: string;
+  cityId: string;
   lat: number;
   lon: number;
   imageUrl: string;
@@ -47,6 +49,7 @@ type RouteSeed = {
 const monumentSeedData: MonumentSeed[] = [
   {
     id: '1',
+    cityId: 'volgograd',
     lat: 48.7423,
     lon: 44.5370,
     imageUrl: 'https://avatars.mds.yandex.net/get-altay/2383444/2a00000174ff2ecda3fbaf5c67a8001d5714/L_height',
@@ -109,6 +112,7 @@ const monumentSeedData: MonumentSeed[] = [
   },
   {
     id: '2',
+    cityId: 'volgograd',
     lat: 48.6424,
     lon: 44.3949,
     imageUrl: 'https://avatars.mds.yandex.net/i?id=b862554392b2aa2992b8486daf6a763a_l-10235419-images-thumbs&n=13',
@@ -171,6 +175,7 @@ const monumentSeedData: MonumentSeed[] = [
   },
   {
     id: '3',
+    cityId: 'volgograd',
     lat: 48.7161,
     lon: 44.5339,
     imageUrl: 'https://img1.advisor.travel/510x450px-Voinskiy_eshelon_pamyatnik_5.jpg',
@@ -247,6 +252,7 @@ const monumentSeedData: MonumentSeed[] = [
   },
   {
     id: '4',
+    cityId: 'volgograd',
     lat: 48.7081,
     lon: 44.5085,
     imageUrl: 'https://cs4.pikabu.ru/post_img/big/2015/11/18/11/1447876452_721034799.jpg',
@@ -308,6 +314,7 @@ const monumentSeedData: MonumentSeed[] = [
   },
   {
     id: '5',
+    cityId: 'volgograd',
     lat: 48.7084,
     lon: 44.5296,
     imageUrl: 'https://avatars.mds.yandex.net/get-altay/10350441/2a0000018de391d38f20465c063c682fd687/orig',
@@ -389,6 +396,7 @@ const monumentSeedData: MonumentSeed[] = [
   },
   {
     id: '6',
+    cityId: 'volgograd',
     lat: 48.7002,
     lon: 44.5123,
     imageUrl: 'https://avatars.mds.yandex.net/i?id=98d87d72c358282d04d91f8924e82821_l-5234655-images-thumbs&n=13',
@@ -515,12 +523,16 @@ const routeSeedData: RouteSeed[] = [
 
 export function seedDatabase(): void {
   db.withTransactionSync(() => {
+    for (const city of CITIES) {
+      db.runSync(`INSERT OR IGNORE INTO cities (id) VALUES (?)`, [city.id]);
+    }
+
     // Памятники
     for (const m of monumentSeedData) {
       db.runSync(
-        `INSERT OR IGNORE INTO monuments (id, lat, lon, image_url, sort_order)
-         VALUES (?, ?, ?, ?, ?)`,
-        [m.id, m.lat, m.lon, m.imageUrl, m.sortOrder ?? 0]
+        `INSERT OR IGNORE INTO monuments (id, city_id, lat, lon, image_url, sort_order)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [m.id, m.cityId, m.lat, m.lon, m.imageUrl, m.sortOrder ?? 0]
       );
 
       // Переводы
@@ -572,4 +584,16 @@ export function seedDatabase(): void {
   });
 
   markSeeded();
+}
+
+export function syncCitiesAndMonumentCityIds(): void {
+  db.withTransactionSync(() => {
+    for (const city of CITIES) {
+      db.runSync(`INSERT OR IGNORE INTO cities (id) VALUES (?)`, [city.id]);
+    }
+    for (const monument of monumentSeedData) {
+      db.runSync(`UPDATE monuments SET city_id = ? WHERE id = ?`, [monument.cityId, monument.id]);
+    }
+    db.runSync(`UPDATE monuments SET city_id = 'volgograd' WHERE city_id IS NULL OR city_id = ''`);
+  });
 }

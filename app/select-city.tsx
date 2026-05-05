@@ -1,4 +1,5 @@
 import { CITIES } from '@/src/data/cities';
+import { getMonumentCountsByCity } from '@/src/db/monumentRepository';
 import {
   getDownloadedCityIds,
   getSelectedCityId,
@@ -88,12 +89,14 @@ export default function SelectCityScreen() {
   const [search, setSearch] = useState('');
   const [selectedCityId, setSelectedCityIdState] = useState<string | null>(null);
   const [downloadedCityIds, setDownloadedCityIdsState] = useState<string[]>([]);
+  const [objectCountsByCity, setObjectCountsByCity] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const load = async () => {
       const [selected, downloaded] = await Promise.all([getSelectedCityId(), getDownloadedCityIds()]);
       setSelectedCityIdState(selected);
       setDownloadedCityIdsState(downloaded);
+      setObjectCountsByCity(getMonumentCountsByCity());
     };
     load();
   }, []);
@@ -158,7 +161,7 @@ export default function SelectCityScreen() {
               key={city.id}
               id={city.id}
               cityName={cityNameById(city.id)}
-              objectsCount={city.objectsCount}
+              objectsCount={objectCountsByCity[city.id] ?? 0}
               selected={city.id === selectedCityId}
               downloaded={downloadedCityIds.includes(city.id)}
               onSelect={() => setSelectedCityIdState(city.id)}

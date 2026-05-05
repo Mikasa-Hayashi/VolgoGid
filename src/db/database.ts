@@ -13,6 +13,10 @@ export function initDatabase(): void {
   db.execSync(`PRAGMA journal_mode = WAL;`);
 
   db.execSync(`
+    CREATE TABLE IF NOT EXISTS cities (
+      id TEXT PRIMARY KEY
+    );
+
     -- Основная таблица памятников (структура, не переводы)
     CREATE TABLE IF NOT EXISTS monuments (
       id         TEXT PRIMARY KEY,
@@ -94,6 +98,14 @@ export function migrateMonumentsFilterColumns(): void {
   if (!monumentsHasColumn('tags_json')) {
     db.execSync(`ALTER TABLE monuments ADD COLUMN tags_json TEXT NOT NULL DEFAULT '[]'`);
   }
+}
+
+/** Adds city_id column and backfills legacy rows. */
+export function migrateMonumentsCityColumn(): void {
+  if (!monumentsHasColumn('city_id')) {
+    db.execSync('ALTER TABLE monuments ADD COLUMN city_id TEXT');
+  }
+  db.execSync(`UPDATE monuments SET city_id = 'volgograd' WHERE city_id IS NULL OR city_id = ''`);
 }
 
 /** Проверяет, была ли уже выполнена начальная загрузка данных */

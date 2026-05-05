@@ -19,6 +19,21 @@ export function syncMonumentFilterMetadata(): void {
   }
 }
 
+export function getMonumentCountsByCity(): Record<string, number> {
+  const rows = db.getAllSync<{ city_id: string | null; cnt: number }>(
+    `SELECT city_id, COUNT(*) as cnt
+     FROM monuments
+     WHERE city_id IS NOT NULL AND city_id != ''
+     GROUP BY city_id`,
+  );
+
+  return rows.reduce<Record<string, number>>((acc, row) => {
+    if (!row.city_id) return acc;
+    acc[row.city_id] = row.cnt ?? 0;
+    return acc;
+  }, {});
+}
+
 // ─── Типы (совместимы со старым monumentStore) ────────────────────────────────
 
 export type FieldConfigRow = {
@@ -84,7 +99,7 @@ function mapPreviewRow(r: {
 }
 
 /** Все памятники для списка/карты (без тяжёлых полей) */
-export function getAllMonumentPreviews(lang: string): MonumentPreview[] {
+export function getAllMonumentPreviews(lang: string, cityId?: string | null): MonumentPreview[] {
   const rows = db.getAllSync<{
     id: string;
     lat: number;
@@ -99,8 +114,9 @@ export function getAllMonumentPreviews(lang: string): MonumentPreview[] {
      FROM monuments m
      LEFT JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
+     WHERE (? IS NULL OR m.city_id = ?)
      ORDER BY m.sort_order`,
-    [lang]
+    [lang, cityId ?? null, cityId ?? null]
   );
 
   return rows.map(mapPreviewRow);
@@ -166,7 +182,7 @@ export function getMonumentCoords(id: string): { lat: number; lon: number } | nu
 }
 
 /** Поиск памятников по имени */
-export function searchMonuments(query: string, lang: string): MonumentPreview[] {
+export function searchMonuments(query: string, lang: string, cityId?: string | null): MonumentPreview[] {
   const rows = db.getAllSync<{
     id: string;
     lat: number;
@@ -182,8 +198,9 @@ export function searchMonuments(query: string, lang: string): MonumentPreview[] 
      JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
      WHERE mt.field_value LIKE ?
+       AND (? IS NULL OR m.city_id = ?)
      ORDER BY m.sort_order`,
-    [lang, `%${query}%`]
+    [lang, `%${query}%`, cityId ?? null, cityId ?? null]
   );
 
   return rows.map(mapPreviewRow);
@@ -194,7 +211,8 @@ export function getNearbyMonuments(
   lat: number,
   lon: number,
   radiusKm: number,
-  lang: string
+  lang: string,
+  cityId?: string | null
 ): (MonumentPreview & { distanceKm: number })[] {
   // Формула Хаверсина прямо в SQL (приближённая, достаточна для малых расстояний)
   const rows = db.getAllSync<{
@@ -211,8 +229,9 @@ export function getNearbyMonuments(
      FROM monuments m
      LEFT JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
+     WHERE (? IS NULL OR m.city_id = ?)
      ORDER BY m.sort_order`,
-    [lang]
+    [lang, cityId ?? null, cityId ?? null]
   );
 
   const R = 6371; // радиус Земли в км

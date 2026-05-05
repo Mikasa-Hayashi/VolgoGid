@@ -14,13 +14,14 @@
  *   }
  */
 
-import { initDatabase, isSeeded, migrateMonumentsFilterColumns } from './database';
+import { initDatabase, isSeeded, migrateMonumentsCityColumn, migrateMonumentsFilterColumns } from './database';
 import { syncMonumentFilterMetadata } from './monumentRepository';
-import { seedDatabase } from './seed';
+import { seedDatabase, syncCitiesAndMonumentCityIds } from './seed';
 
 export function setupDatabase(): void {
   // 1. Создаём таблицы (если нет)
   initDatabase();
+  migrateMonumentsCityColumn();
   migrateMonumentsFilterColumns();
 
   // 2. Заливаем начальные данные (только при первом запуске)
@@ -33,6 +34,7 @@ export function setupDatabase(): void {
   }
 
   syncMonumentFilterMetadata();
+  syncCitiesAndMonumentCityIds();
 }
 
 
