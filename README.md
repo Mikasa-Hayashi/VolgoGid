@@ -1,50 +1,114 @@
-# Welcome to your Expo app 👋
+# VolgoGid
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Mobile app built with Expo + React Native for exploring monuments and routes across selected cities.
 
-## Get started
+## Features
 
-1. Install dependencies
+- City selection with local persistence and downloadable city state
+- Monument browsing in list and map tabs
+- Dynamic city object counters based on DB data (`monuments.city_id`)
+- Monument detail pages with localized content
+- Monument-specific quiz generation
+- Route list and route details
+- Camera screen and settings screen
+- Light/dark theming
+- Multilingual UI (`ru`, `en`, `ar`, `zh`)
+- Local SQLite storage with seed + migration flow
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- Expo SDK 54 + React Native 0.81
+- Expo Router (file-based navigation)
+- SQLite (`expo-sqlite`)
+- `react-i18next` + `i18next` + `expo-localization`
+- TypeScript
 
-   ```bash
-   npx expo start
-   ```
+## Project Structure
 
-In the output, you'll find options to open the app in a
+```text
+app/
+  _layout.tsx            # Root stack + providers + DB setup call
+  index.tsx              # Entry gate (onboarding/city flow redirect)
+  select-city.tsx        # City picker
+  menu.tsx               # Monument menu/search
+  info.tsx               # Monument details
+  route-info.tsx         # Route details
+  quiz.tsx               # Monument quiz
+  settings.tsx
+  camera.tsx
+  (tabs)/
+    _layout.tsx          # Bottom tabs
+    index.tsx            # Map tab
+    overview.tsx         # Monument overview tab
+    routes.tsx           # Routes tab
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+src/
+  db/
+    database.ts          # Schema + migrations
+    dbInit.ts            # DB initialization orchestration
+    seed.ts              # Seed data + city/monument sync
+    monumentRepository.ts
+    routeRepository.ts
+  data/
+    cities.ts
+    monumentFilterMeta.ts
+    quiz.ts
+  i18n/
+    i18n.ts
+    ru.json
+    en.json
+    ar.json
+    zh.json
+  storage/
+    citySelection.ts
+  theme/
+  components/
+  map/
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Getting Started
 
-## Learn more
+### 1) Install dependencies
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 2) Run the app
 
-## Join the community
+```bash
+npm run start
+```
 
-Join our community of developers creating universal apps.
+You can then open the app in Expo Go / emulator from the Expo CLI prompt.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Platform shortcuts
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+## Quality Checks
+
+```bash
+npm run lint
+npx tsc --noEmit
+```
+
+## Data and Localization Notes
+
+- Database setup runs at app startup in `app/_layout.tsx` via `setupDatabase()`.
+- Monument data is stored in SQLite and seeded from `src/db/seed.ts`.
+- City object counters are derived from DB aggregates, not hardcoded values.
+- Translations live in `src/i18n/*.json`; i18n bootstrap is in `src/i18n/i18n.ts`.
+
+## NPM Scripts
+
+- `start` - start Expo dev server
+- `android` - start and open Android target
+- `ios` - start and open iOS target
+- `web` - start web target
+- `lint` - run Expo lint
+- `reset-project` - reset scaffold utility script
