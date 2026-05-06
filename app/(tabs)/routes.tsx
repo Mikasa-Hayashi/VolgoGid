@@ -151,7 +151,7 @@ export default function RoutesTabScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.customRouteButtonContainer, { paddingBottom: tabBarHeight }]}>
+      <View style={styles.customRouteButtonContainer}>
         <TouchableOpacity
           style={[styles.customRouteButton, { backgroundColor: colors.primary }]}
           activeOpacity={0.9}
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 12 },
-  searchWrap: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4 },
+  searchWrap: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 6 },
   listWrap: { paddingHorizontal: 20, paddingTop: 12 },
   searchContainer: {
     flexDirection: 'row',
@@ -208,7 +208,8 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 16, fontWeight: '600' },
   customRouteButtonContainer: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 6,
+    paddingBottom: 10,
   },
   customRouteButton: {
     height: 52,
