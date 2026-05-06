@@ -3,6 +3,7 @@ import { getSelectedCityId } from '@/src/storage/citySelection';
 import { headerStyles } from '@/src/theme/headerStyles';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useRouter } from 'expo-router';
 import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import React, { useMemo, useRef, useState } from 'react';
@@ -13,6 +14,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -58,18 +60,54 @@ const RouteRow = ({
   </TouchableOpacity>
 );
 
+const SearchBar = ({
+  value,
+  onChange,
+  colors,
+  t,
+}: {
+  value: string;
+  onChange: (text: string) => void;
+  colors: any;
+  t: any;
+}) => (
+  <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+    <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
+    <TextInput
+      style={[styles.searchInput, { color: colors.text }]}
+      placeholder={t('routesScreen.searchPlaceholder')}
+      placeholderTextColor={colors.textMuted}
+      value={value}
+      onChangeText={onChange}
+      returnKeyType="done"
+    />
+    {value.length > 0 && (
+      <TouchableOpacity onPress={() => onChange('')} style={styles.clearButton}>
+        <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
 export default function RoutesTabScreen() {
   const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
+  const tabBarHeight = useBottomTabBarHeight();
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   useScrollToTop(scrollRef);
 
   const routes = useMemo(
     () => getAllRoutes(i18n.language, selectedCityId),
     [i18n.language, selectedCityId],
   );
+  const filteredRoutes = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return routes;
+    return routes.filter((route) => route.name.toLowerCase().includes(query));
+  }, [routes, searchQuery]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -83,24 +121,48 @@ export default function RoutesTabScreen() {
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <RoutesHeader onSettings={() => router.push('/settings')} colors={colors} t={t} />
 
+      <View style={styles.searchWrap}>
+        <SearchBar value={searchQuery} onChange={setSearchQuery} colors={colors} t={t} />
+      </View>
+
       <ScrollView
         ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.listWrap}>
-          {routes.map((route) => (
-            <RouteRow
-              key={route.id}
-              coverImageUrl={route.coverImageUrl}
-              title={route.name}
-              onPress={() => router.push({ pathname: '/route-info', params: { id: route.id } })}
-              colors={colors}
-            />
-          ))}
+          {filteredRoutes.length === 0 ? (
+            <View style={styles.emptyWrap}>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('menu.notFound')}</Text>
+            </View>
+          ) : (
+            filteredRoutes.map((route) => (
+              <RouteRow
+                key={route.id}
+                coverImageUrl={route.coverImageUrl}
+                title={route.name}
+                onPress={() => router.push({ pathname: '/route-info', params: { id: route.id } })}
+                colors={colors}
+              />
+            ))
+          )}
         </View>
       </ScrollView>
+
+      <View style={[styles.customRouteButtonContainer, { paddingBottom: tabBarHeight }]}>
+        <TouchableOpacity
+          style={[styles.customRouteButton, { backgroundColor: colors.primary }]}
+          activeOpacity={0.9}
+          onPress={() => {}}
+        >
+          <Ionicons name="add-circle-outline" size={20} color={colors.oppositeText} />
+          <Text style={[styles.customRouteButtonText, { color: colors.oppositeText }]}>
+            {t('routesScreen.customRoute')}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -108,8 +170,19 @@ export default function RoutesTabScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { paddingBottom: 40 },
-  listWrap: { paddingHorizontal: 20, paddingTop: 16 },
+  scrollContent: { paddingBottom: 12 },
+  searchWrap: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4 },
+  listWrap: { paddingHorizontal: 20, paddingTop: 12 },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 50,
+  },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, fontSize: 16, height: '100%' },
+  clearButton: { padding: 5 },
   routeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -130,5 +203,23 @@ const styles = StyleSheet.create({
   routeRowTitle: {
     fontSize: 16,
     fontWeight: '700',
+  },
+  emptyWrap: { alignItems: 'center', paddingTop: 30 },
+  emptyText: { fontSize: 16, fontWeight: '600' },
+  customRouteButtonContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  customRouteButton: {
+    height: 52,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  customRouteButtonText: {
+    fontSize: 16,
+    fontWeight: '800',
   },
 });

@@ -76,6 +76,10 @@
     "stops": "路线站点",
     "stopsCount": "站点数：{{count}}"
   },
+  "routesScreen": {
+    "searchPlaceholder": "搜索路线...",
+    "customRoute": "自定义路线"
+  },
   "map": {
     "title": "探索",
     "details": "详情"

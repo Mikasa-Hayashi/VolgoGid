@@ -80,6 +80,10 @@
     "stops": "محطات المسار",
     "stopsCount": "عدد المحطات: {{count}}"
   },
+  "routesScreen": {
+    "searchPlaceholder": "ابحث عن المسارات...",
+    "customRoute": "مسار مخصص"
+  },
 
   "map": {
     "title": "استكشاف",

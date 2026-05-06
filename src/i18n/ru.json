@@ -82,6 +82,10 @@
     "stops": "Остановки маршрута",
     "stopsCount": "Точек: {{count}}"
   },
+  "routesScreen": {
+    "searchPlaceholder": "Поиск маршрутов...",
+    "customRoute": "Свой маршрут"
+  },
 
   "routes_data": {
     "center": {

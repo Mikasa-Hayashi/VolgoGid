@@ -82,6 +82,10 @@
     "stops": "Route stops",
     "stopsCount": "Stops: {{count}}"
   },
+  "routesScreen": {
+    "searchPlaceholder": "Search routes...",
+    "customRoute": "Custom Route"
+  },
 
   "routes_data": {
     "center": {
