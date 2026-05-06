@@ -14,15 +14,23 @@
  *   }
  */
 
-import { initDatabase, isSeeded, migrateMonumentsCityColumn, migrateMonumentsFilterColumns } from './database';
+import { DB_SCHEMA_VERSION, db, ensureMetaTable, getSchemaVersion, initDatabase, isSeeded, resetDomainTables, setSchemaVersion } from './database';
 import { syncMonumentFilterMetadata } from './monumentRepository';
 import { seedDatabase, syncCitiesAndMonumentCityIds } from './seed';
 
 export function setupDatabase(): void {
-  // 1. Создаём таблицы (если нет)
+  // 1. Read schema version before creating/querying domain tables.
+  ensureMetaTable();
+  const currentVersion = getSchemaVersion();
+
+  if (currentVersion !== DB_SCHEMA_VERSION) {
+    console.log(`[DB] Schema mismatch ${currentVersion} -> ${DB_SCHEMA_VERSION}. Rebuilding DB...`);
+    resetDomainTables();
+    initDatabase();
+    setSchemaVersion(DB_SCHEMA_VERSION);
+    db.runSync(`DELETE FROM app_meta WHERE key = 'seeded'`);
+  }
   initDatabase();
-  migrateMonumentsCityColumn();
-  migrateMonumentsFilterColumns();
 
   // 2. Заливаем начальные данные (только при первом запуске)
   if (!isSeeded()) {

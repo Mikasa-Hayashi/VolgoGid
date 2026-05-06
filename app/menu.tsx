@@ -212,14 +212,14 @@ export default function MonumentsScreen() {
   const monumentRows = useMemo(() => chunkPairs(filteredMonuments), [filteredMonuments]);
 
   // Маршруты: имена и описания уже переведены
-  const routes = useMemo(() => getAllRoutes(lang), [lang]);
+  const routes = useMemo(() => getAllRoutes(lang, selectedCityId), [lang, selectedCityId]);
 
   const handleMonumentPress = (monument: MonumentPreview) => {
     router.push(`/info?id=${monument.id}`);
   };
 
   const handleRoutePress = (routeId: string) => {
-    router.push(`/route-info?id=${routeId}`);
+    router.push({ pathname: '/route-info', params: { id: routeId } });
   };
 
   const handleBack = () => {

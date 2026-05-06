@@ -1,10 +1,11 @@
 import { getAllRoutes } from '@/src/db/routeRepository';
+import { getSelectedCityId } from '@/src/storage/citySelection';
 import { headerStyles } from '@/src/theme/headerStyles';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useScrollToTop } from '@react-navigation/native';
-import React, { useMemo, useRef } from 'react';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
+import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
@@ -62,9 +63,20 @@ export default function RoutesTabScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   useScrollToTop(scrollRef);
 
-  const routes = useMemo(() => getAllRoutes(i18n.language), [i18n.language]);
+  const routes = useMemo(
+    () => getAllRoutes(i18n.language, selectedCityId),
+    [i18n.language, selectedCityId],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const load = async () => setSelectedCityId(await getSelectedCityId());
+      load();
+    }, []),
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -83,7 +95,7 @@ export default function RoutesTabScreen() {
               key={route.id}
               coverImageUrl={route.coverImageUrl}
               title={route.name}
-              onPress={() => router.push(`/route-info?id=${route.id}`)}
+              onPress={() => router.push({ pathname: '/route-info', params: { id: route.id } })}
               colors={colors}
             />
           ))}

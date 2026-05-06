@@ -9,27 +9,26 @@ import { db } from './database';
 
 /** Writes tags_json + popularity from monumentFilterMeta (idempotent; run each launch). */
 export function syncMonumentFilterMetadata(): void {
-  for (const [id, meta] of Object.entries(monumentFilterMeta)) {
+  for (const [slug, meta] of Object.entries(monumentFilterMeta)) {
     const tagsJson = JSON.stringify(meta.tags);
-    db.runSync(`UPDATE monuments SET tags_json = ?, popularity = ? WHERE id = ?`, [
+    db.runSync(`UPDATE monuments SET tags_json = ?, popularity = ? WHERE slug = ?`, [
       tagsJson,
       meta.popularity,
-      id,
+      slug,
     ]);
   }
 }
 
 export function getMonumentCountsByCity(): Record<string, number> {
-  const rows = db.getAllSync<{ city_id: string | null; cnt: number }>(
-    `SELECT city_id, COUNT(*) as cnt
-     FROM monuments
-     WHERE city_id IS NOT NULL AND city_id != ''
-     GROUP BY city_id`,
+  const rows = db.getAllSync<{ city_slug: string; cnt: number }>(
+    `SELECT c.slug as city_slug, COUNT(*) as cnt
+     FROM monuments m
+     JOIN cities c ON c.id = m.city_id
+     GROUP BY c.slug`,
   );
 
   return rows.reduce<Record<string, number>>((acc, row) => {
-    if (!row.city_id) return acc;
-    acc[row.city_id] = row.cnt ?? 0;
+    acc[row.city_slug] = row.cnt ?? 0;
     return acc;
   }, {});
 }
@@ -77,7 +76,8 @@ function parseTagsJson(raw: string | null | undefined): string[] {
 }
 
 function mapPreviewRow(r: {
-  id: string;
+  id: number;
+  slug: string;
   lat: number;
   lon: number;
   image_url: string;
@@ -87,7 +87,7 @@ function mapPreviewRow(r: {
   tags_json: string | null;
 }): MonumentPreview {
   return {
-    id: r.id,
+    id: r.slug,
     lat: r.lat,
     lon: r.lon,
     imageUrl: r.image_url,
@@ -101,7 +101,8 @@ function mapPreviewRow(r: {
 /** Все памятники для списка/карты (без тяжёлых полей) */
 export function getAllMonumentPreviews(lang: string, cityId?: string | null): MonumentPreview[] {
   const rows = db.getAllSync<{
-    id: string;
+    id: number;
+    slug: string;
     lat: number;
     lon: number;
     image_url: string;
@@ -110,11 +111,12 @@ export function getAllMonumentPreviews(lang: string, cityId?: string | null): Mo
     popularity: number;
     tags_json: string | null;
   }>(
-    `SELECT m.id, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
+    `SELECT m.id, m.slug, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
      FROM monuments m
+     JOIN cities c ON c.id = m.city_id
      LEFT JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
-     WHERE (? IS NULL OR m.city_id = ?)
+     WHERE (? IS NULL OR c.slug = ?)
      ORDER BY m.sort_order`,
     [lang, cityId ?? null, cityId ?? null]
   );
@@ -124,8 +126,8 @@ export function getAllMonumentPreviews(lang: string, cityId?: string | null): Mo
 
 /** Один памятник со всеми полями */
 export function getMonumentById(id: string, lang: string): Monument | null {
-  const base = db.getFirstSync<{ id: string; lat: number; lon: number; image_url: string }>(
-    `SELECT id, lat, lon, image_url FROM monuments WHERE id = ?`,
+  const base = db.getFirstSync<{ id: number; slug: string; lat: number; lon: number; image_url: string }>(
+    `SELECT id, slug, lat, lon, image_url FROM monuments WHERE slug = ?`,
     [id]
   );
   if (!base) return null;
@@ -135,7 +137,7 @@ export function getMonumentById(id: string, lang: string): Monument | null {
     `SELECT field_key, field_value
      FROM monument_translations
      WHERE monument_id = ? AND lang = ?`,
-    [id, lang]
+    [base.id, lang]
   );
   const translations = new Map(translationRows.map(r => [r.field_key, r.field_value]));
 
@@ -147,7 +149,7 @@ export function getMonumentById(id: string, lang: string): Monument | null {
      FROM monument_field_config
      WHERE monument_id = ?
      ORDER BY section, order_index`,
-    [id]
+    [base.id]
   );
 
   const details: FieldConfigRow[] = [];
@@ -161,7 +163,7 @@ export function getMonumentById(id: string, lang: string): Monument | null {
   }
 
   return {
-    id: base.id,
+    id: base.slug,
     lat: base.lat,
     lon: base.lon,
     imageUrl: base.image_url,
@@ -176,7 +178,7 @@ export function getMonumentById(id: string, lang: string): Monument | null {
 /** Координаты памятника (для маршрутов, без перевода) */
 export function getMonumentCoords(id: string): { lat: number; lon: number } | null {
   return db.getFirstSync<{ lat: number; lon: number }>(
-    `SELECT lat, lon FROM monuments WHERE id = ?`,
+    `SELECT lat, lon FROM monuments WHERE slug = ?`,
     [id]
   ) ?? null;
 }
@@ -184,7 +186,8 @@ export function getMonumentCoords(id: string): { lat: number; lon: number } | nu
 /** Поиск памятников по имени */
 export function searchMonuments(query: string, lang: string, cityId?: string | null): MonumentPreview[] {
   const rows = db.getAllSync<{
-    id: string;
+    id: number;
+    slug: string;
     lat: number;
     lon: number;
     image_url: string;
@@ -193,12 +196,13 @@ export function searchMonuments(query: string, lang: string, cityId?: string | n
     popularity: number;
     tags_json: string | null;
   }>(
-    `SELECT m.id, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
+    `SELECT m.id, m.slug, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
      FROM monuments m
+     JOIN cities c ON c.id = m.city_id
      JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
      WHERE mt.field_value LIKE ?
-       AND (? IS NULL OR m.city_id = ?)
+       AND (? IS NULL OR c.slug = ?)
      ORDER BY m.sort_order`,
     [lang, `%${query}%`, cityId ?? null, cityId ?? null]
   );
@@ -216,7 +220,8 @@ export function getNearbyMonuments(
 ): (MonumentPreview & { distanceKm: number })[] {
   // Формула Хаверсина прямо в SQL (приближённая, достаточна для малых расстояний)
   const rows = db.getAllSync<{
-    id: string;
+    id: number;
+    slug: string;
     lat: number;
     lon: number;
     image_url: string;
@@ -225,11 +230,12 @@ export function getNearbyMonuments(
     popularity: number;
     tags_json: string | null;
   }>(
-    `SELECT m.id, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
+    `SELECT m.id, m.slug, m.lat, m.lon, m.image_url, m.sort_order, m.popularity, m.tags_json, mt.field_value
      FROM monuments m
+     JOIN cities c ON c.id = m.city_id
      LEFT JOIN monument_translations mt
        ON mt.monument_id = m.id AND mt.lang = ? AND mt.field_key = 'name'
-     WHERE (? IS NULL OR m.city_id = ?)
+     WHERE (? IS NULL OR c.slug = ?)
      ORDER BY m.sort_order`,
     [lang, cityId ?? null, cityId ?? null]
   );

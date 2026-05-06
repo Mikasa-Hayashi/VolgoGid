@@ -109,7 +109,7 @@ export default function MonumentDetailScreen() {
 
   // Загружаем памятник из SQLite с учётом текущего языка
   // Все поля (name, description, details, visitors) уже переведены
-  const monument = getMonumentById(id ?? '1', i18n.language);
+  const monument = getMonumentById(id ?? 'motherland-calls', i18n.language);
 
   const handleBack = () => {
     router.back();

@@ -26,8 +26,8 @@ type FieldConfigItem = {
 };
 
 type MonumentSeed = {
-  id: string;
-  cityId: string;
+  slug: string;
+  citySlug: string;
   lat: number;
   lon: number;
   imageUrl: string;
@@ -37,10 +37,11 @@ type MonumentSeed = {
 };
 
 type RouteSeed = {
-  id: string;
-  coverMonumentId: string;
+  slug: string;
+  citySlug: string;
+  coverMonumentSlug: string;
   sortOrder?: number;
-  monumentIds: string[];
+  monumentSlugs: string[];
   translations: { [lang in Lang]: { name: string; description: string } };
 };
 
@@ -48,8 +49,8 @@ type RouteSeed = {
 
 const monumentSeedData: MonumentSeed[] = [
   {
-    id: '1',
-    cityId: 'volgograd',
+    slug: 'motherland-calls',
+    citySlug: 'volgograd',
     lat: 48.7423,
     lon: 44.5370,
     imageUrl: 'https://avatars.mds.yandex.net/get-altay/2383444/2a00000174ff2ecda3fbaf5c67a8001d5714/L_height',
@@ -111,8 +112,8 @@ const monumentSeedData: MonumentSeed[] = [
     },
   },
   {
-    id: '2',
-    cityId: 'volgograd',
+    slug: 'lysaya-gora-memorial',
+    citySlug: 'volgograd',
     lat: 48.6424,
     lon: 44.3949,
     imageUrl: 'https://avatars.mds.yandex.net/i?id=b862554392b2aa2992b8486daf6a763a_l-10235419-images-thumbs&n=13',
@@ -174,8 +175,8 @@ const monumentSeedData: MonumentSeed[] = [
     },
   },
   {
-    id: '3',
-    cityId: 'volgograd',
+    slug: 'military-train',
+    citySlug: 'volgograd',
     lat: 48.7161,
     lon: 44.5339,
     imageUrl: 'https://img1.advisor.travel/510x450px-Voinskiy_eshelon_pamyatnik_5.jpg',
@@ -251,8 +252,8 @@ const monumentSeedData: MonumentSeed[] = [
     },
   },
   {
-    id: '4',
-    cityId: 'volgograd',
+    slug: 'first-tram-monument',
+    citySlug: 'volgograd',
     lat: 48.7081,
     lon: 44.5085,
     imageUrl: 'https://cs4.pikabu.ru/post_img/big/2015/11/18/11/1447876452_721034799.jpg',
@@ -313,8 +314,8 @@ const monumentSeedData: MonumentSeed[] = [
     },
   },
   {
-    id: '5',
-    cityId: 'volgograd',
+    slug: 'volgograd-amphitheatre',
+    citySlug: 'volgograd',
     lat: 48.7084,
     lon: 44.5296,
     imageUrl: 'https://avatars.mds.yandex.net/get-altay/10350441/2a0000018de391d38f20465c063c682fd687/orig',
@@ -395,8 +396,8 @@ const monumentSeedData: MonumentSeed[] = [
     },
   },
   {
-    id: '6',
-    cityId: 'volgograd',
+    slug: 'russia-my-history-park',
+    citySlug: 'volgograd',
     lat: 48.7002,
     lon: 44.5123,
     imageUrl: 'https://avatars.mds.yandex.net/i?id=98d87d72c358282d04d91f8924e82821_l-5234655-images-thumbs&n=13',
@@ -482,10 +483,11 @@ const monumentSeedData: MonumentSeed[] = [
 
 const routeSeedData: RouteSeed[] = [
   {
-    id: 'center',
-    coverMonumentId: '1',
+    slug: 'center',
+    citySlug: 'volgograd',
+    coverMonumentSlug: 'motherland-calls',
     sortOrder: 1,
-    monumentIds: ['1', '5', '6'],
+    monumentSlugs: ['motherland-calls', 'volgograd-amphitheatre', 'russia-my-history-park'],
     translations: {
       ru: { name: 'Символы Волгограда', description: 'Маршрут по главным символам города: от Родины-матери на Мамаевом кургане до набережного амфитеатра и исторического парка.' },
       en: { name: 'Symbols of Volgograd', description: 'A route through the city\'s landmarks: from Motherland Calls on Mamayev Kurgan to the riverside amphitheater and the interactive history park.' },
@@ -494,10 +496,11 @@ const routeSeedData: RouteSeed[] = [
     },
   },
   {
-    id: 'history',
-    coverMonumentId: '2',
+    slug: 'history',
+    citySlug: 'volgograd',
+    coverMonumentSlug: 'lysaya-gora-memorial',
     sortOrder: 2,
-    monumentIds: ['2', '3', '4'],
+    monumentSlugs: ['lysaya-gora-memorial', 'military-train', 'first-tram-monument'],
     translations: {
       ru: { name: 'Дорога памяти', description: 'Маршрут по мемориалам Сталинградской битвы: Лысая гора, Воинский эшелон у панорамы и памятник первому трамваю.' },
       en: { name: 'Road of Memory', description: 'A path through memorials of the Battle of Stalingrad: Lysaya Gora, the Military Echelon near the panorama, and the first tram monument.' },
@@ -506,10 +509,11 @@ const routeSeedData: RouteSeed[] = [
     },
   },
   {
-    id: 'poetic',
-    coverMonumentId: '5',
+    slug: 'poetic',
+    citySlug: 'volgograd',
+    coverMonumentSlug: 'volgograd-amphitheatre',
     sortOrder: 3,
-    monumentIds: ['2', '5', '3'],
+    monumentSlugs: ['lysaya-gora-memorial', 'volgograd-amphitheatre', 'military-train'],
     translations: {
       ru: { name: 'Поэтический Волгоград', description: 'Лысая гора, амфитеатр на Волге и Воинский эшелон: память о войне, набережная архитектура и железнодорожное наследие.' },
       en: { name: 'Poetic Volgograd', description: 'Lysaya Gora, the Volga amphitheater, and the Military Echelon: war memory, embankment architecture, and railway heritage in one route.' },
@@ -524,60 +528,86 @@ const routeSeedData: RouteSeed[] = [
 export function seedDatabase(): void {
   db.withTransactionSync(() => {
     for (const city of CITIES) {
-      db.runSync(`INSERT OR IGNORE INTO cities (id) VALUES (?)`, [city.id]);
+      db.runSync(`INSERT OR IGNORE INTO cities (slug) VALUES (?)`, [city.id]);
     }
 
-    // Памятники
+    const cityIdBySlug = new Map<string, number>();
+    for (const city of db.getAllSync<{ id: number; slug: string }>(`SELECT id, slug FROM cities`)) {
+      cityIdBySlug.set(city.slug, city.id);
+    }
+
+    const monumentIdBySlug = new Map<string, number>();
     for (const m of monumentSeedData) {
+      const cityId = cityIdBySlug.get(m.citySlug);
+      if (!cityId) continue;
+
       db.runSync(
-        `INSERT OR IGNORE INTO monuments (id, city_id, lat, lon, image_url, sort_order)
+        `INSERT OR IGNORE INTO monuments (city_id, slug, lat, lon, image_url, sort_order)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [m.id, m.cityId, m.lat, m.lon, m.imageUrl, m.sortOrder ?? 0]
+        [cityId, m.slug, m.lat, m.lon, m.imageUrl, m.sortOrder ?? 0]
       );
 
-      // Переводы
+      const monumentId = db.getFirstSync<{ id: number }>(
+        `SELECT id FROM monuments WHERE city_id = ? AND slug = ?`,
+        [cityId, m.slug],
+      )?.id;
+      if (!monumentId) continue;
+      monumentIdBySlug.set(m.slug, monumentId);
+
       for (const [lang, fields] of Object.entries(m.translations)) {
         for (const [fieldKey, fieldValue] of Object.entries(fields)) {
           db.runSync(
             `INSERT OR IGNORE INTO monument_translations (monument_id, lang, field_key, field_value)
              VALUES (?, ?, ?, ?)`,
-            [m.id, lang, fieldKey, fieldValue]
+            [monumentId, lang, fieldKey, fieldValue]
           );
         }
       }
 
-      // Конфигурация полей
       m.fields.forEach((f, i) => {
         db.runSync(
           `INSERT OR IGNORE INTO monument_field_config
              (monument_id, section, order_index, label_key, field_key, static_value)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [m.id, f.section, i, f.labelKey, f.fieldKey ?? null, f.staticValue ?? null]
+          [monumentId, f.section, i, f.labelKey, f.fieldKey ?? null, f.staticValue ?? null]
         );
       });
     }
 
-    // Маршруты
+    const routeIdByKey = new Map<string, number>();
     for (const r of routeSeedData) {
+      const cityId = cityIdBySlug.get(r.citySlug);
+      const coverMonumentId = monumentIdBySlug.get(r.coverMonumentSlug) ?? null;
+      if (!cityId) continue;
+
       db.runSync(
-        `INSERT OR IGNORE INTO routes (id, cover_monument_id, sort_order)
-         VALUES (?, ?, ?)`,
-        [r.id, r.coverMonumentId, r.sortOrder ?? 0]
+        `INSERT OR IGNORE INTO routes (city_id, slug, cover_monument_id, sort_order, difficulty, duration_min, distance_km)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [cityId, r.slug, coverMonumentId, r.sortOrder ?? 0, null, null, null]
       );
+
+      const routeId = db.getFirstSync<{ id: number }>(
+        `SELECT id FROM routes WHERE city_id = ? AND slug = ?`,
+        [cityId, r.slug],
+      )?.id;
+      if (!routeId) continue;
+      routeIdByKey.set(`${r.citySlug}:${r.slug}`, routeId);
 
       for (const [lang, tr] of Object.entries(r.translations)) {
         db.runSync(
-          `INSERT OR IGNORE INTO route_translations (route_id, lang, name, description)
-           VALUES (?, ?, ?, ?)`,
-          [r.id, lang, tr.name, tr.description]
+          `INSERT OR IGNORE INTO route_translations (route_id, lang, name, short_description, description)
+           VALUES (?, ?, ?, ?, ?)`,
+          [routeId, lang, tr.name, tr.description, tr.description]
         );
       }
 
-      r.monumentIds.forEach((mid, i) => {
+      r.monumentSlugs.forEach((monumentSlug, i) => {
+        const monumentId = monumentIdBySlug.get(monumentSlug);
+        if (!monumentId) return;
         db.runSync(
           `INSERT OR IGNORE INTO route_stops (route_id, monument_id, order_index)
            VALUES (?, ?, ?)`,
-          [r.id, mid, i]
+          [routeId, monumentId, i]
         );
       });
     }
@@ -589,11 +619,16 @@ export function seedDatabase(): void {
 export function syncCitiesAndMonumentCityIds(): void {
   db.withTransactionSync(() => {
     for (const city of CITIES) {
-      db.runSync(`INSERT OR IGNORE INTO cities (id) VALUES (?)`, [city.id]);
+      db.runSync(`INSERT OR IGNORE INTO cities (slug) VALUES (?)`, [city.id]);
+    }
+    const cityIdBySlug = new Map<string, number>();
+    for (const city of db.getAllSync<{ id: number; slug: string }>(`SELECT id, slug FROM cities`)) {
+      cityIdBySlug.set(city.slug, city.id);
     }
     for (const monument of monumentSeedData) {
-      db.runSync(`UPDATE monuments SET city_id = ? WHERE id = ?`, [monument.cityId, monument.id]);
+      const cityId = cityIdBySlug.get(monument.citySlug);
+      if (!cityId) continue;
+      db.runSync(`UPDATE monuments SET city_id = ? WHERE slug = ?`, [cityId, monument.slug]);
     }
-    db.runSync(`UPDATE monuments SET city_id = 'volgograd' WHERE city_id IS NULL OR city_id = ''`);
   });
 }

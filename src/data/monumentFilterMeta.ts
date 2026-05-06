@@ -21,10 +21,10 @@ export type MonumentFilterEntry = {
 
 /** Seeded monument ids — keep in sync with seed.ts */
 export const monumentFilterMeta: Record<string, MonumentFilterEntry> = {
-  '1': { tags: ['top', 'memorials', 'architecture', 'history'], popularity: 100 },
-  '2': { tags: ['memorials', 'nature', 'history'], popularity: 72 },
-  '3': { tags: ['memorials', 'history', 'museums'], popularity: 68 },
-  '4': { tags: ['history', 'museums'], popularity: 45 },
-  '5': { tags: ['architecture', 'nature', 'top'], popularity: 78 },
-  '6': { tags: ['museums', 'parks', 'top'], popularity: 85 },
+  'motherland-calls': { tags: ['top', 'memorials', 'architecture', 'history'], popularity: 100 },
+  'lysaya-gora-memorial': { tags: ['memorials', 'nature', 'history'], popularity: 72 },
+  'military-train': { tags: ['memorials', 'history', 'museums'], popularity: 68 },
+  'first-tram-monument': { tags: ['history', 'museums'], popularity: 45 },
+  'volgograd-amphitheatre': { tags: ['architecture', 'nature', 'top'], popularity: 78 },
+  'russia-my-history-park': { tags: ['museums', 'parks', 'top'], popularity: 85 },
 };

@@ -132,7 +132,7 @@ export default function MapTabScreen() {
   };
 
   const openRouteDetails = () => {
-    if (routeId) router.push(`/route-info?id=${routeId}`);
+    if (routeId) router.push({ pathname: '/route-info', params: { id: routeId } });
   };
 
   const handleOpenOverview = () => {
